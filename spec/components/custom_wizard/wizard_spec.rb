@@ -359,6 +359,13 @@ describe CustomWizard::Wizard do
 
       expect(user.approved).to eq(true)
     end
+
+    it "is idempotent on repeated calls" do
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: user.id).once
+
+      wizard.cleanup_on_complete!
+      wizard.cleanup_on_complete!
+    end
   end
 
   describe "#delayed_approval_pending?" do
@@ -395,6 +402,14 @@ describe CustomWizard::Wizard do
     it "returns false when there is no user (guest)" do
       guest_wizard = CustomWizard::Wizard.create("super_mega_fun_wizard", nil, "guest_abc")
       expect(guest_wizard.delayed_approval_pending?).to eq(false)
+    end
+
+    it "returns false when the user has been promoted to staff" do
+      user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      user.save_custom_fields(true)
+      user.update!(admin: true)
+
+      expect(wizard.delayed_approval_pending?).to eq(false)
     end
   end
 end

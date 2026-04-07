@@ -326,17 +326,16 @@ class CustomWizard::Wizard
 
   def delayed_approval_pending?
     return false if user.blank?
+    return false if user.staff?
     user.custom_fields["delayed_approval_wizard_id"] == id
   end
 
   def trigger_delayed_approval_revocation!
-    user.approved = false
-    user.approved_by_id = nil
-    user.approved_at = nil
-    user.save!
-
-    user.custom_fields.delete("delayed_approval_wizard_id")
-    user.save_custom_fields(true)
+    User.transaction do
+      user.update!(approved: false, approved_by_id: nil, approved_at: nil)
+      user.custom_fields.delete("delayed_approval_wizard_id")
+      user.save_custom_fields(true)
+    end
 
     Jobs.enqueue(:create_user_reviewable, user_id: user.id)
   end
