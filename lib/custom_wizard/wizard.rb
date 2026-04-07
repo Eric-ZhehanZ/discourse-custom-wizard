@@ -17,6 +17,7 @@ class CustomWizard::Wizard
                 :after_time_scheduled,
                 :after_time_group_names,
                 :after_signup,
+                :delay_approval_until_finish,
                 :required,
                 :prompt_completion,
                 :restart_on_revisit,
@@ -57,6 +58,7 @@ class CustomWizard::Wizard
     @restart_on_revisit = cast_bool(attrs["restart_on_revisit"])
     @resume_on_revisit = cast_bool(attrs["resume_on_revisit"])
     @after_signup = cast_bool(attrs["after_signup"])
+    @delay_approval_until_finish = cast_bool(attrs["delay_approval_until_finish"])
     @after_time = cast_bool(attrs["after_time"])
     @after_time_scheduled = attrs["after_time_scheduled"]
     @after_time_group_names = attrs["after_time_groups"]

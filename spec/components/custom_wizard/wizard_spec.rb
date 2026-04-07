@@ -258,6 +258,29 @@ describe CustomWizard::Wizard do
     end
   end
 
+  describe "#delay_approval_until_finish" do
+    it "defaults to false when not set in the template" do
+      wizard = CustomWizard::Wizard.new({ "id" => "test", "name" => "Test" })
+      expect(wizard.delay_approval_until_finish).to eq(false)
+    end
+
+    it "casts a true value from the template" do
+      wizard =
+        CustomWizard::Wizard.new(
+          { "id" => "test", "name" => "Test", "delay_approval_until_finish" => true },
+        )
+      expect(wizard.delay_approval_until_finish).to eq(true)
+    end
+
+    it "casts a stringy 'true' value from the template" do
+      wizard =
+        CustomWizard::Wizard.new(
+          { "id" => "test", "name" => "Test", "delay_approval_until_finish" => "true" },
+        )
+      expect(wizard.delay_approval_until_finish).to eq(true)
+    end
+  end
+
   context "class methods" do
     before do
       CustomWizard::Template.save(@permitted_template, skip_jobs: true)
