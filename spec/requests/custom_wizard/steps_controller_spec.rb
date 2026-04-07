@@ -384,4 +384,50 @@ describe CustomWizard::StepsController do
       end
     end
   end
+
+  context "with delayed-approval user finishing the wizard" do
+    fab!(:approved_user, :user)
+    let(:wizard_template_delay) { get_wizard_fixture("wizard") }
+
+    before do
+      SiteSetting.must_approve_users = true
+      wizard_template_delay["after_signup"] = true
+      wizard_template_delay["delay_approval_until_finish"] = true
+      wizard_template_delay["required"] = true
+      CustomWizard::Template.save(wizard_template_delay, skip_jobs: true)
+
+      approved_user.update!(approved: true)
+      approved_user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      approved_user.save_custom_fields(true)
+
+      sign_in(approved_user)
+    end
+
+    it "logs the user off and sets redirect_on_complete to /login on final step" do
+      put "/w/super-mega-fun-wizard/steps/step_1.json"
+      expect(response.status).to eq(200)
+      put "/w/super-mega-fun-wizard/steps/step_2.json"
+      expect(response.status).to eq(200)
+      put "/w/super-mega-fun-wizard/steps/step_3.json"
+
+      expect(response.status).to eq(200)
+      body = response.parsed_body
+      expect(body["final"]).to eq(true)
+      expect(body["redirect_on_complete"]).to eq("/login")
+    end
+
+    it "does not affect non-delayed-approval wizard finishes" do
+      approved_user.custom_fields.delete("delayed_approval_wizard_id")
+      approved_user.save_custom_fields(true)
+
+      put "/w/super-mega-fun-wizard/steps/step_1.json"
+      put "/w/super-mega-fun-wizard/steps/step_2.json"
+      put "/w/super-mega-fun-wizard/steps/step_3.json"
+
+      expect(response.status).to eq(200)
+      body = response.parsed_body
+      expect(body["final"]).to eq(true)
+      expect(body["redirect_on_complete"]).not_to eq("/login")
+    end
+  end
 end

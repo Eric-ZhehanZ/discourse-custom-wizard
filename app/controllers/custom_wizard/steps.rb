@@ -47,11 +47,21 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
 
         current_submission.save
 
+        was_in_delayed_approval = @wizard.delayed_approval_pending?
+
         if redirect = get_redirect
           updater.result[:redirect_on_complete] = redirect
         end
 
         @wizard.cleanup_on_complete!
+
+        if was_in_delayed_approval
+          # Override any route_to / redirect_on_next from the wizard config:
+          # delayed-approval wizards always end with the user logged out and sent
+          # to the login flow, where Discourse's existing not-approved UX takes over.
+          log_off_user
+          updater.result[:redirect_on_complete] = "/login"
+        end
 
         result[:final] = true
       else
