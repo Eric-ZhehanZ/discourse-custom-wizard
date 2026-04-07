@@ -169,6 +169,25 @@ after_initialize do
   on(:user_unstaged, &delay_approval_handler)
 
   add_to_class(:application_controller, :redirect_to_wizard_if_required) do
+    return if current_user.blank?
+
+    delayed_approval_wizard_id = current_user.custom_fields["delayed_approval_wizard_id"]
+    in_delayed_approval = delayed_approval_wizard_id.present? && !current_user.staff?
+
+    if in_delayed_approval
+      return if request.format != "text/html"
+
+      url = request.original_url
+      wizard_path_segment = "/w/#{delayed_approval_wizard_id.dasherize}"
+      return if url.include?(wizard_path_segment)
+      return if url =~ %r{/session(/|\.|\z)}
+      return if url =~ %r{/logout(/|\.|\z)}
+      return if url =~ %r{/login(/|\.|\z)}
+
+      redirect_to wizard_path_segment
+      return
+    end
+
     @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/"]
     url = request.referer || request.original_url
     excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url }
