@@ -152,14 +152,17 @@ after_initialize do
     proc do |user|
       next if user.staff?
       next if user.approved?
+      next unless SiteSetting.must_approve_users || SiteSetting.invite_only
 
       template = CustomWizard::Wizard.delay_approval_until_finish_template
       next unless template
 
-      ReviewableUser.set_approved_fields!(user, Discourse.system_user)
-      user.save!
-      user.custom_fields["delayed_approval_wizard_id"] = template["id"]
-      user.save_custom_fields(true)
+      User.transaction do
+        ReviewableUser.set_approved_fields!(user, Discourse.system_user)
+        user.save!
+        user.custom_fields["delayed_approval_wizard_id"] = template["id"]
+        user.save_custom_fields(true)
+      end
     end
 
   on(:user_created, &delay_approval_handler)

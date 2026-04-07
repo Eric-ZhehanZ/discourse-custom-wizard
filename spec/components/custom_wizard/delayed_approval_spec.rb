@@ -31,10 +31,21 @@ describe "Delayed approval signup hook" do
       user.reload
 
       expect(user.custom_fields["delayed_approval_wizard_id"]).to be_blank
+      expect(user.admin).to eq(true)
     end
 
     it "does not modify users who are already approved" do
       user = Fabricate(:user, approved: true)
+      user.reload
+
+      expect(user.custom_fields["delayed_approval_wizard_id"]).to be_blank
+    end
+
+    it "does nothing when must_approve_users and invite_only are both off" do
+      SiteSetting.must_approve_users = false
+      SiteSetting.invite_only = false
+
+      user = Fabricate(:user, approved: false)
       user.reload
 
       expect(user.custom_fields["delayed_approval_wizard_id"]).to be_blank
