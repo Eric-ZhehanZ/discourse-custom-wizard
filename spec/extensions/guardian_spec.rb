@@ -34,6 +34,13 @@ describe CustomWizardGuardian do
       expect(guardian.can_edit_user?(user)).to eq(false)
     end
 
+    it "does not block can_edit_user? for another user (falls through to core)" do
+      # The override only short-circuits self-edits. Editing OTHERS goes through
+      # core, which will deny based on permissions — but our override should NOT
+      # be the reason it's denied/allowed.
+      expect { guardian.can_edit_user?(other_user) }.not_to raise_error
+    end
+
     context "when the user is staff" do
       before { user.update!(admin: true) }
 
@@ -56,8 +63,8 @@ describe CustomWizardGuardian do
   context "with anonymous guardian" do
     let(:guardian) { Guardian.new }
 
-    it "does not raise on can_see_topic?" do
-      expect { guardian.can_see_topic?(topic) }.not_to raise_error
+    it "falls through to core for can_see_topic?" do
+      expect(guardian.can_see_topic?(topic)).to eq(true)
     end
   end
 end
