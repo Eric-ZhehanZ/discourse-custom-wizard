@@ -59,6 +59,8 @@ en:
       not_permitted_for_guests: "%{object_id} is not permitted when guests can access the wizard"
     error_messages:
       wizard_replacing_composer: "Category not allowed for topic creation."
+    delayed_approval:
+      cannot_skip: "This wizard cannot be skipped while your account is awaiting approval."
 
   site_settings:
     custom_wizard_enabled: "Enable custom wizards."

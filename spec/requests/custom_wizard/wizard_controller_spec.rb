@@ -98,4 +98,23 @@ describe CustomWizard::WizardController do
       end
     end
   end
+
+  context "delayed-approval user" do
+    before do
+      @template["after_signup"] = true
+      @template["delay_approval_until_finish"] = true
+      @template["required"] = true
+      CustomWizard::Template.save(@template)
+      user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      user.save_custom_fields(true)
+      sign_in(user)
+    end
+
+    it "rejects skip with 403" do
+      put "/w/super_mega_fun_wizard/skip.json"
+      expect(response.status).to eq(403)
+      body = JSON.parse(response.body)
+      expect(body["error"]).to eq(I18n.t("wizard.delayed_approval.cannot_skip"))
+    end
+  end
 end

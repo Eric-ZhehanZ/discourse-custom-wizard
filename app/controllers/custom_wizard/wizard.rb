@@ -14,6 +14,11 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
   def skip
     params.require(:wizard_id)
 
+    if current_user &&
+         current_user.custom_fields["delayed_approval_wizard_id"] == params[:wizard_id].underscore
+      return render json: { error: I18n.t("wizard.delayed_approval.cannot_skip") }, status: 403
+    end
+
     if wizard.required && !wizard.completed? && wizard.permitted?
       return render json: { error: I18n.t("wizard.no_skip") }
     end
