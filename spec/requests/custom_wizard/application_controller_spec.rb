@@ -227,6 +227,16 @@ describe ApplicationController do
         expect(response).not_to be_redirect
       end
 
+      it "does not redirect /login requests" do
+        get "/login"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "does not redirect non-HTML (JSON) requests" do
+        get "/categories.json"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
       it "does not lock out staff" do
         user.update!(admin: true)
         get "/"

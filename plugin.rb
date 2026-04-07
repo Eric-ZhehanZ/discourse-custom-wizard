@@ -177,12 +177,10 @@ after_initialize do
     if in_delayed_approval
       return if request.format != "text/html"
 
-      url = request.original_url
       wizard_path_segment = "/w/#{delayed_approval_wizard_id.dasherize}"
-      return if url.include?(wizard_path_segment)
-      return if url =~ %r{/session(/|\.|\z)}
-      return if url =~ %r{/logout(/|\.|\z)}
-      return if url =~ %r{/login(/|\.|\z)}
+      return if request.path.start_with?(wizard_path_segment)
+      return if request.path =~ %r{\A/session(/|\.|\z)}
+      return if request.path =~ %r{\A/login(/|\.|\z)}
 
       redirect_to wizard_path_segment
       return
