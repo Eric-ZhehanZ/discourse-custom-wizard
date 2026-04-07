@@ -4,7 +4,8 @@ class CustomWizard::TemplateValidator
   include ActiveModel::Model
 
   def initialize(data, opts = {})
-    @data = data
+    @original_data = data
+    @data = data.respond_to?(:with_indifferent_access) ? data.with_indifferent_access : data
     @opts = opts
     @subscription = CustomWizard::Subscription.new
   end
@@ -15,6 +16,7 @@ class CustomWizard::TemplateValidator
     check_id(data, :wizard)
     check_required(data, :wizard)
     validate_after_signup
+    validate_delay_approval_until_finish
     validate_after_time
     validate_subscription(data, :wizard)
 
@@ -104,6 +106,25 @@ class CustomWizard::TemplateValidator
     if other_after_signup.any?
       errors.add :base,
                  I18n.t("wizard.validation.after_signup", wizard_id: other_after_signup.first["id"])
+    end
+  end
+
+  def validate_delay_approval_until_finish
+    return unless ActiveRecord::Type::Boolean.new.cast(@data[:delay_approval_until_finish])
+
+    unless ActiveRecord::Type::Boolean.new.cast(@data[:after_signup])
+      errors.add :base, I18n.t("wizard.validation.delay_approval_requires_after_signup")
+      return
+    end
+
+    # Force required=true so the user cannot skip the wizard during the lockdown window
+    @data[:required] = true
+    if @original_data.is_a?(Hash) && !@original_data.equal?(@data)
+      if @original_data.key?("required")
+        @original_data["required"] = true
+      else
+        @original_data[:required] = true
+      end
     end
   end
 

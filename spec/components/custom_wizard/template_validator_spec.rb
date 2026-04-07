@@ -212,4 +212,39 @@ describe CustomWizard::TemplateValidator do
       end
     end
   end
+
+  context "delay_approval_until_finish" do
+    let(:base_template) do
+      {
+        "id" => "delayed_wizard",
+        "name" => "Delayed Wizard",
+        "after_signup" => true,
+        "delay_approval_until_finish" => true,
+        "required" => true,
+        "steps" => [{ "id" => "step_1" }],
+      }
+    end
+
+    it "is valid when after_signup is true and required is true" do
+      validator = CustomWizard::TemplateValidator.new(base_template)
+      expect(validator.perform).to eq(true)
+      expect(validator.errors).to be_empty
+    end
+
+    it "is invalid when after_signup is false" do
+      template = base_template.merge("after_signup" => false)
+      validator = CustomWizard::TemplateValidator.new(template)
+      expect(validator.perform).to eq(false)
+      expect(validator.errors.full_messages).to include(
+        I18n.t("wizard.validation.delay_approval_requires_after_signup"),
+      )
+    end
+
+    it "forces required to true when delay_approval_until_finish is true" do
+      template = base_template.merge("required" => false)
+      validator = CustomWizard::TemplateValidator.new(template)
+      validator.perform
+      expect(template["required"]).to eq(true)
+    end
+  end
 end
