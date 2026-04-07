@@ -310,6 +310,8 @@ class CustomWizard::Wizard
   end
 
   def cleanup_on_complete!
+    was_in_delayed_approval = delayed_approval_pending?
+
     remove_user_redirect
 
     if current_submission.present?
@@ -317,7 +319,26 @@ class CustomWizard::Wizard
       current_submission.save
     end
 
+    trigger_delayed_approval_revocation! if was_in_delayed_approval
+
     update!
+  end
+
+  def delayed_approval_pending?
+    return false if user.blank?
+    user.custom_fields["delayed_approval_wizard_id"] == id
+  end
+
+  def trigger_delayed_approval_revocation!
+    user.approved = false
+    user.approved_by_id = nil
+    user.approved_at = nil
+    user.save!
+
+    user.custom_fields.delete("delayed_approval_wizard_id")
+    user.save_custom_fields(true)
+
+    Jobs.enqueue(:create_user_reviewable, user_id: user.id)
   end
 
   def cleanup_on_skip!
