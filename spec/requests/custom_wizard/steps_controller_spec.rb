@@ -404,6 +404,8 @@ describe CustomWizard::StepsController do
     end
 
     it "logs the user off and sets redirect_on_complete to /login on final step" do
+      expect_any_instance_of(CustomWizard::StepsController).to receive(:log_off_user).and_call_original
+
       put "/w/super-mega-fun-wizard/steps/step_1.json"
       expect(response.status).to eq(200)
       put "/w/super-mega-fun-wizard/steps/step_2.json"

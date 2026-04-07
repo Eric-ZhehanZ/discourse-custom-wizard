@@ -19,6 +19,7 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
     @result = updater.result
 
     if updater.success?
+      serializer_user = current_user
       wizard_id = update_params[:wizard_id]
       builder = CustomWizard::Builder.new(wizard_id, current_user, guest_id)
       @wizard = builder.build(force: true)
@@ -75,7 +76,7 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       result[:refresh_required] = true if updater.refresh_required?
       result[:wizard] = ::CustomWizard::WizardSerializer.new(
         @wizard,
-        scope: Guardian.new(current_user),
+        scope: Guardian.new(serializer_user),
         root: false,
       ).as_json
 
