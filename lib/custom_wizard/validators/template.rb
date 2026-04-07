@@ -4,8 +4,7 @@ class CustomWizard::TemplateValidator
   include ActiveModel::Model
 
   def initialize(data, opts = {})
-    @original_data = data
-    @data = data.respond_to?(:with_indifferent_access) ? data.with_indifferent_access : data
+    @data = data
     @opts = opts
     @subscription = CustomWizard::Subscription.new
   end
@@ -119,13 +118,6 @@ class CustomWizard::TemplateValidator
 
     # Force required=true so the user cannot skip the wizard during the lockdown window
     @data[:required] = true
-    if @original_data.is_a?(Hash) && !@original_data.equal?(@data)
-      if @original_data.key?("required")
-        @original_data["required"] = true
-      else
-        @original_data[:required] = true
-      end
-    end
   end
 
   def validate_after_time

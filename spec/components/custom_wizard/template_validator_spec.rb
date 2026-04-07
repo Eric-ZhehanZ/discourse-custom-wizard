@@ -222,7 +222,7 @@ describe CustomWizard::TemplateValidator do
         "delay_approval_until_finish" => true,
         "required" => true,
         "steps" => [{ "id" => "step_1" }],
-      }
+      }.with_indifferent_access
     end
 
     it "is valid when after_signup is true and required is true" do
@@ -245,6 +245,20 @@ describe CustomWizard::TemplateValidator do
       validator = CustomWizard::TemplateValidator.new(template)
       validator.perform
       expect(template["required"]).to eq(true)
+    end
+
+    it "casts string 'true' for delay_approval_until_finish" do
+      template = base_template.merge("delay_approval_until_finish" => "true")
+      validator = CustomWizard::TemplateValidator.new(template)
+      expect(validator.perform).to eq(true)
+      expect(template["required"]).to eq(true)
+    end
+
+    it "does not force required when delay_approval_until_finish is false" do
+      template = base_template.merge("delay_approval_until_finish" => false, "required" => false)
+      validator = CustomWizard::TemplateValidator.new(template)
+      expect(validator.perform).to eq(true)
+      expect(template["required"]).to eq(false)
     end
   end
 end
