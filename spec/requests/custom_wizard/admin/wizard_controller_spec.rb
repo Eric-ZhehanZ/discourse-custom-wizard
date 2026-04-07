@@ -78,4 +78,18 @@ describe CustomWizard::AdminWizardController do
     expect(updated_template["multiple_submissions"]).to eq("false")
     expect(updated_template["steps"][0]["fields"][0]["label"]).to eq("Text 2")
   end
+
+  it "saves the delay_approval_until_finish flag" do
+    template_updated = template.dup
+    template_updated["delay_approval_until_finish"] = true
+
+    put "/admin/wizards/wizard/#{template["id"]}.json",
+        params: {
+          wizard: template_updated,
+        },
+        as: :json
+    expect(response.status).to eq(200)
+    updated_template = CustomWizard::Template.find("super_mega_fun_wizard")
+    expect(updated_template["delay_approval_until_finish"]).to eq(true)
+  end
 end
