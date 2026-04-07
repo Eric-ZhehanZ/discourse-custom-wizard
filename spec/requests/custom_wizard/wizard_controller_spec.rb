@@ -116,5 +116,15 @@ describe CustomWizard::WizardController do
       body = JSON.parse(response.body)
       expect(body["error"]).to eq(I18n.t("wizard.delayed_approval.cannot_skip"))
     end
+
+    it "does not reject skip when marker is for a different wizard" do
+      # Marker points at a different wizard id; the guard must NOT fire and
+      # the request should fall through to normal skip logic.
+      user.custom_fields["delayed_approval_wizard_id"] = "some_other_wizard"
+      user.save_custom_fields(true)
+
+      put "/w/super_mega_fun_wizard/skip.json"
+      expect(response.status).not_to eq(403)
+    end
   end
 end
