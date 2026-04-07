@@ -376,6 +376,13 @@ class CustomWizard::Wizard
     wizards.any? ? wizards.first : false
   end
 
+  def self.delay_approval_until_finish_template
+    template = CustomWizard::Template.list(setting: "after_signup").first
+    return nil unless template
+
+    ActiveRecord::Type::Boolean.new.cast(template["delay_approval_until_finish"]) ? template : nil
+  end
+
   def self.prompt_completion(user)
     wizards =
       list(

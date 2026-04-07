@@ -148,6 +148,23 @@ after_initialize do
     end
   end
 
+  delay_approval_handler =
+    proc do |user|
+      next if user.staff?
+      next if user.approved?
+
+      template = CustomWizard::Wizard.delay_approval_until_finish_template
+      next unless template
+
+      ReviewableUser.set_approved_fields!(user, Discourse.system_user)
+      user.save!
+      user.custom_fields["delayed_approval_wizard_id"] = template["id"]
+      user.save_custom_fields(true)
+    end
+
+  on(:user_created, &delay_approval_handler)
+  on(:user_unstaged, &delay_approval_handler)
+
   add_to_class(:application_controller, :redirect_to_wizard_if_required) do
     @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/"]
     url = request.referer || request.original_url
