@@ -80,7 +80,13 @@ describe CustomWizard::AdminWizardController do
   end
 
   it "saves the delay_approval_until_finish flag" do
+    # template_3 is the only existing after_signup wizard. Remove it so we can
+    # mark `template` as after_signup without tripping the "only one after_signup
+    # wizard at a time" validator.
+    CustomWizard::Template.remove("super_mega_fun_wizard_3")
+
     template_updated = template.dup
+    template_updated["after_signup"] = true
     template_updated["delay_approval_until_finish"] = true
 
     put "/admin/wizards/wizard/#{template["id"]}.json",
@@ -91,5 +97,6 @@ describe CustomWizard::AdminWizardController do
     expect(response.status).to eq(200)
     updated_template = CustomWizard::Template.find("super_mega_fun_wizard")
     expect(updated_template["delay_approval_until_finish"]).to eq(true)
+    expect(updated_template["after_signup"]).to eq(true)
   end
 end
