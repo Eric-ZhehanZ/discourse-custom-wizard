@@ -70,6 +70,7 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
       :save_submissions,
       :multiple_submissions,
       :after_signup,
+      :delay_approval_until_finish,
       :after_time,
       :after_time_scheduled,
       :required,

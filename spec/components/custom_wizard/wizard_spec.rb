@@ -258,6 +258,29 @@ describe CustomWizard::Wizard do
     end
   end
 
+  describe "#delay_approval_until_finish" do
+    it "defaults to false when not set in the template" do
+      wizard = CustomWizard::Wizard.new({ "id" => "test", "name" => "Test" })
+      expect(wizard.delay_approval_until_finish).to eq(false)
+    end
+
+    it "casts a true value from the template" do
+      wizard =
+        CustomWizard::Wizard.new(
+          { "id" => "test", "name" => "Test", "delay_approval_until_finish" => true },
+        )
+      expect(wizard.delay_approval_until_finish).to eq(true)
+    end
+
+    it "casts a stringy 'true' value from the template" do
+      wizard =
+        CustomWizard::Wizard.new(
+          { "id" => "test", "name" => "Test", "delay_approval_until_finish" => "true" },
+        )
+      expect(wizard.delay_approval_until_finish).to eq(true)
+    end
+  end
+
   context "class methods" do
     before do
       CustomWizard::Template.save(@permitted_template, skip_jobs: true)
@@ -294,6 +317,99 @@ describe CustomWizard::Wizard do
       progress_step("step_2", wizard: wizard_2)
       progress_step("step_3", wizard: wizard_2)
       expect(CustomWizard::Wizard.prompt_completion(user).length).to eq(1)
+    end
+  end
+
+  describe "#cleanup_on_complete! with delayed approval" do
+    fab!(:user) { Fabricate(:user, approved: true) }
+    let(:template) { get_wizard_fixture("wizard") }
+
+    before do
+      SiteSetting.must_approve_users = true
+      template["after_signup"] = true
+      template["delay_approval_until_finish"] = true
+      template["required"] = true
+      CustomWizard::Template.save(template, skip_jobs: true)
+      user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      user.save_custom_fields(true)
+    end
+
+    let(:wizard) { CustomWizard::Wizard.create("super_mega_fun_wizard", user) }
+
+    it "revokes approval, clears the marker, and enqueues a reviewable" do
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: user.id)
+
+      wizard.cleanup_on_complete!
+      user.reload
+
+      expect(user.approved).to eq(false)
+      expect(user.approved_by_id).to be_nil
+      expect(user.approved_at).to be_nil
+      expect(user.custom_fields["delayed_approval_wizard_id"]).to be_blank
+    end
+
+    it "does nothing for users without the marker" do
+      user.custom_fields.delete("delayed_approval_wizard_id")
+      user.save_custom_fields(true)
+
+      Jobs.expects(:enqueue).never
+
+      wizard.cleanup_on_complete!
+      user.reload
+
+      expect(user.approved).to eq(true)
+    end
+
+    it "is idempotent on repeated calls" do
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: user.id).once
+
+      wizard.cleanup_on_complete!
+      wizard.cleanup_on_complete!
+    end
+  end
+
+  describe "#delayed_approval_pending?" do
+    fab!(:user) { Fabricate(:user, approved: true) }
+    let(:template) { get_wizard_fixture("wizard") }
+
+    before do
+      template["after_signup"] = true
+      template["delay_approval_until_finish"] = true
+      template["required"] = true
+      CustomWizard::Template.save(template, skip_jobs: true)
+    end
+
+    let(:wizard) { CustomWizard::Wizard.create("super_mega_fun_wizard", user) }
+
+    it "returns true when the user has the marker matching this wizard" do
+      user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      user.save_custom_fields(true)
+
+      expect(wizard.delayed_approval_pending?).to eq(true)
+    end
+
+    it "returns false when the marker is missing" do
+      expect(wizard.delayed_approval_pending?).to eq(false)
+    end
+
+    it "returns false when the marker points at a different wizard" do
+      user.custom_fields["delayed_approval_wizard_id"] = "other_wizard"
+      user.save_custom_fields(true)
+
+      expect(wizard.delayed_approval_pending?).to eq(false)
+    end
+
+    it "returns false when there is no user (guest)" do
+      guest_wizard = CustomWizard::Wizard.create("super_mega_fun_wizard", nil, "guest_abc")
+      expect(guest_wizard.delayed_approval_pending?).to eq(false)
+    end
+
+    it "returns false when the user has been promoted to staff" do
+      user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      user.save_custom_fields(true)
+      user.update!(admin: true)
+
+      expect(wizard.delayed_approval_pending?).to eq(false)
     end
   end
 end

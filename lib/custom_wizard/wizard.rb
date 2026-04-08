@@ -17,6 +17,7 @@ class CustomWizard::Wizard
                 :after_time_scheduled,
                 :after_time_group_names,
                 :after_signup,
+                :delay_approval_until_finish,
                 :required,
                 :prompt_completion,
                 :restart_on_revisit,
@@ -57,6 +58,7 @@ class CustomWizard::Wizard
     @restart_on_revisit = cast_bool(attrs["restart_on_revisit"])
     @resume_on_revisit = cast_bool(attrs["resume_on_revisit"])
     @after_signup = cast_bool(attrs["after_signup"])
+    @delay_approval_until_finish = cast_bool(attrs["delay_approval_until_finish"])
     @after_time = cast_bool(attrs["after_time"])
     @after_time_scheduled = attrs["after_time_scheduled"]
     @after_time_group_names = attrs["after_time_groups"]
@@ -308,6 +310,8 @@ class CustomWizard::Wizard
   end
 
   def cleanup_on_complete!
+    was_in_delayed_approval = delayed_approval_pending?
+
     remove_user_redirect
 
     if current_submission.present?
@@ -315,7 +319,20 @@ class CustomWizard::Wizard
       current_submission.save
     end
 
+    trigger_delayed_approval_revocation! if was_in_delayed_approval
+
     update!
+  end
+
+  def delayed_approval_pending?
+    return false if user.blank?
+    return false if user.staff?
+    user.custom_fields["delayed_approval_wizard_id"] == id
+  end
+
+  def trigger_delayed_approval_revocation!
+    self.class.revoke_delayed_approval_db!(user)
+    Jobs.enqueue(:create_user_reviewable, user_id: user.id)
   end
 
   def cleanup_on_skip!
@@ -372,6 +389,30 @@ class CustomWizard::Wizard
         { setting: "after_signup", order: "(value::json ->> 'permitted') IS NOT NULL DESC" },
       )
     wizards.any? ? wizards.first : false
+  end
+
+  def self.delay_approval_until_finish_template
+    # Consult the cached id list first so sites without any after_signup wizard
+    # pay only a cache hit per signup, not a PluginStoreRow query.
+    wizard_id = CustomWizard::Template.after_signup_ids.first
+    return nil unless wizard_id
+
+    template = CustomWizard::Template.find(wizard_id)
+    return nil unless template
+
+    ActiveRecord::Type::Boolean.new.cast(template["delay_approval_until_finish"]) ? template : nil
+  end
+
+  # DB-only revocation of a single user's delayed-approval state.
+  # Safe to call inside an outer transaction. Does NOT enqueue a review job —
+  # the caller is responsible for that AFTER any outer transaction commits,
+  # to avoid racing the commit against Sidekiq picking up the job.
+  def self.revoke_delayed_approval_db!(user)
+    User.transaction do
+      user.update!(approved: false, approved_by_id: nil, approved_at: nil)
+      user.custom_fields.delete("delayed_approval_wizard_id")
+      user.save_custom_fields(true)
+    end
   end
 
   def self.prompt_completion(user)

@@ -148,7 +148,80 @@ after_initialize do
     end
   end
 
+  delay_approval_handler =
+    proc do |user|
+      next if user.staff?
+      next if user.approved?
+      next unless SiteSetting.must_approve_users || SiteSetting.invite_only
+
+      template = CustomWizard::Wizard.delay_approval_until_finish_template
+      next unless template
+
+      User.transaction do
+        ReviewableUser.set_approved_fields!(user, Discourse.system_user)
+        user.save!
+        user.custom_fields["delayed_approval_wizard_id"] = template["id"]
+        user.save_custom_fields(true)
+      end
+    end
+
+  on(:user_created, &delay_approval_handler)
+  on(:user_unstaged, &delay_approval_handler)
+
+  on(:reviewable_created) do |reviewable|
+    next unless reviewable.is_a?(ReviewableUser)
+    next unless reviewable.target.is_a?(User)
+
+    user = reviewable.target
+    delayed_wizard_id = user.custom_fields["delayed_approval_wizard_id"]
+
+    # The marker is normally cleared by `cleanup_on_complete!` BEFORE the
+    # CreateUserReviewable job enqueues (see Task 8), so on the wizard-finish
+    # path we fall back to the active after_signup wizard — which is the one
+    # the user just finished. The marker branch only fires for edge cases where
+    # a reviewable is created while the user is still mid-lockdown.
+    #
+    # NOTE: if an admin changes the after_signup wizard between the user
+    # finishing Wizard A and this handler running, the fallback would pick
+    # Wizard B — but the window is tiny and the misattribution only affects
+    # the link target, not approval correctness.
+    candidate_wizard_id =
+      delayed_wizard_id.presence || CustomWizard::Template.after_signup_ids.first
+
+    next if candidate_wizard_id.blank?
+
+    wizard = CustomWizard::Wizard.create(candidate_wizard_id, user)
+    next if wizard.blank?
+    next if wizard.submissions.blank?
+
+    payload = reviewable.payload || {}
+    payload["wizard_submission_url"] = "/admin/wizards/submissions/#{candidate_wizard_id}"
+    reviewable.update!(payload: payload)
+  end
+
   add_to_class(:application_controller, :redirect_to_wizard_if_required) do
+    return if current_user.blank?
+
+    delayed_approval_wizard_id = current_user.custom_fields["delayed_approval_wizard_id"]
+    in_delayed_approval = delayed_approval_wizard_id.present? && !current_user.staff?
+
+    if in_delayed_approval
+      return if request.format != "text/html"
+
+      wizard_path_segment = "/w/#{delayed_approval_wizard_id.dasherize}"
+      return if request.path.start_with?(wizard_path_segment)
+      return if request.path =~ %r{\A/session(/|\.|\z)}
+      return if request.path =~ %r{\A/login(/|\.|\z)}
+      # /logout is not explicitly allowed: the normal wizard-completion path
+      # already calls log_off_user server-side (see StepsController#update),
+      # and manual logout via /logout 302s to /session/<username> which is
+      # covered by the /session exemption above. Users cannot get stuck.
+      return if request.path =~ %r{\A/logout(/|\.|\z)}
+
+      redirect_to wizard_path_segment
+      return
+    end
+
     @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/"]
     url = request.referer || request.original_url
     excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url }

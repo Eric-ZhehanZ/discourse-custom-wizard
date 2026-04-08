@@ -57,7 +57,10 @@ class CustomWizard::Template
     wizard = CustomWizard::Wizard.create(wizard_id)
     return false if !wizard
 
+    revoked_user_ids = []
+
     ActiveRecord::Base.transaction do
+      revoked_user_ids = revoke_delayed_approval_for_in_flight_users(wizard_id)
       ensure_wizard_upload_references!(wizard_id)
       PluginStore.remove(CustomWizard::PLUGIN_NAME, wizard.id)
       clear_user_wizard_redirect(wizard_id, after_time: !!wizard.after_time)
@@ -68,6 +71,10 @@ class CustomWizard::Template
         )
       related_custom_fields.destroy_all
     end
+
+    # Enqueue review jobs AFTER the transaction commits so a late rollback
+    # doesn't leave Sidekiq processing an unrolled-back revocation.
+    revoked_user_ids.each { |user_id| Jobs.enqueue(:create_user_reviewable, user_id: user_id) }
 
     clear_cache_keys
 
@@ -101,6 +108,17 @@ class CustomWizard::Template
     UserCustomField.where(name: "redirect_to_wizard", value: wizard_id).destroy_all
 
     Jobs.cancel_scheduled_job(:set_after_time_wizard, wizard_id: wizard_id) if after_time
+  end
+
+  def self.revoke_delayed_approval_for_in_flight_users(wizard_id)
+    user_ids =
+      UserCustomField.where(name: "delayed_approval_wizard_id", value: wizard_id).pluck(:user_id)
+
+    User
+      .where(id: user_ids)
+      .find_each { |user| CustomWizard::Wizard.revoke_delayed_approval_db!(user) }
+
+    user_ids
   end
 
   def self.after_signup_ids

@@ -9,6 +9,7 @@ const wizard = {
     save_submissions: true,
     multiple_submissions: null,
     after_signup: null,
+    delay_approval_until_finish: null,
     after_time: null,
     after_time_scheduled: null,
     required: null,

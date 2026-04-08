@@ -189,6 +189,66 @@ describe ApplicationController do
       end
     end
 
+    context "in delayed-approval lockdown" do
+      before do
+        @template["after_signup"] = true
+        @template["delay_approval_until_finish"] = true
+        @template["required"] = true
+        CustomWizard::Template.save(@template)
+        user.approved = true
+        user.save!
+        user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+        user.save_custom_fields(true)
+      end
+
+      it "redirects HTML requests to the wizard" do
+        get "/"
+        expect(response).to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "redirects HTML requests for any other path to the wizard" do
+        get "/categories"
+        expect(response).to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "ignores wizard_redirect_exclude_paths" do
+        SiteSetting.wizard_redirect_exclude_paths = "/faq"
+        get "/faq"
+        expect(response).to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "does not redirect requests already pointing at the wizard" do
+        get "/w/super-mega-fun-wizard"
+        expect(response).not_to be_redirect
+      end
+
+      it "does not redirect /session requests" do
+        get "/session/csrf.json"
+        expect(response).not_to be_redirect
+      end
+
+      it "does not redirect /login requests" do
+        get "/login"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "does not redirect /logout requests" do
+        get "/logout"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "does not redirect non-HTML (JSON) requests" do
+        get "/categories.json"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
+      it "does not lock out staff" do
+        user.update!(admin: true)
+        get "/"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+    end
+
     context "who is not required to complete wizard" do
       it "does nothing" do
         get "/"

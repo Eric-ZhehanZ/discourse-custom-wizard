@@ -96,6 +96,18 @@
       </div>
     </div>
 
+    {{#if this.wizard.after_signup}}
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.delay_approval_until_finish"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input @type="checkbox" @checked={{this.wizard.delay_approval_until_finish}} />
+          <span>{{i18n "admin.wizard.delay_approval_until_finish_label"}}</span>
+        </div>
+      </div>
+    {{/if}}
+
     <div class="setting">
       <div class="setting-label">
         <label>{{i18n "admin.wizard.prompt_completion"}}</label>
