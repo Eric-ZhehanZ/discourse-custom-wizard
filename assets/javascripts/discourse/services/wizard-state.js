@@ -10,14 +10,22 @@ import { trustHTML } from "@ember/template";
 //
 // `pendingUploads` tracks in-flight uploads across ALL fields in the
 // wizard — set from `custom-wizard-field-upload` via
-// `registerUpload` / `releaseUpload`. The rule (per design):
+// `registerUpload` / `releaseUpload`. The design:
 //
-//   - Start upload on select
-//   - Track uploads globally
-//   - DO NOT block step advances if the mandatory upload field has a file
-//     selected (even if it's still uploading in the background)
-//   - DO block final submission (the Done button) until ALL uploads are
-//     complete, so no field ends up with a null value at submit time.
+//   - Start upload on select (no separate "upload now" button).
+//   - Track uploads globally.
+//   - The Next click is always accepted — `CustomWizardField#check`
+//     treats a mid-upload required upload field as valid via
+//     `hasPendingUpload`, so the user never sees a required-field
+//     error while their file is still on the wire.
+//   - The navigation from Next still waits for the upload to finish
+//     (`advance()` awaits `whenIdle()` before `step.save()`) because
+//     the server needs the final upload URL to persist the field
+//     value. Visible effect: the button shows "Saving..." instead of
+//     an error.
+//   - The Done button (final submission) is disabled until every
+//     upload across the whole wizard has landed, so no field ends up
+//     with a null value at submit time.
 export default class WizardStateService extends Service {
   @tracked activeStep = null;
   @tracked activeWizard = null;
@@ -87,8 +95,11 @@ export default class WizardStateService extends Service {
   }
 
   // Matches the ratio math from the old `barStyle` computed on
-  // custom-wizard-step — ratio is clamped to [0, 1] and scaled to the
-  // pixel width of the bar (200px).
+  // custom-wizard-step — ratio is clamped to [0, 1] and returned as a
+  // percentage of the progress bar's container width. This stays in
+  // sync with the responsive widths in wizard.scss (200px / 140px /
+  // 110px across breakpoints) instead of hard-coding a px value that
+  // would overflow / underflow on mobile.
   get barStyle() {
     const total = parseFloat(this.totalSteps);
     const index = parseFloat(this.activeStep?.index || 0);
@@ -102,6 +113,6 @@ export default class WizardStateService extends Service {
         ratio = 1;
       }
     }
-    return trustHTML(`width: ${ratio * 200}px`);
+    return trustHTML(`width: ${ratio * 100}%`);
   }
 }

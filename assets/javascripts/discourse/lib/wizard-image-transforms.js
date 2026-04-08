@@ -17,15 +17,31 @@ const HEIC2ANY_URL =
 let imageCompressionPromise;
 let heic2anyPromise;
 
+// Cache successful loads so repeated uploads on the same page reuse the
+// already-fetched script, but clear the cache on failure so transient
+// errors (network blip, temporary CSP block, CDN outage) don't
+// permanently poison the transform pipeline for the rest of the session.
 function loadImageCompression() {
-  imageCompressionPromise ||= loadScript(IMAGE_COMPRESSION_URL).then(
-    () => window.imageCompression
-  );
+  if (!imageCompressionPromise) {
+    imageCompressionPromise = loadScript(IMAGE_COMPRESSION_URL)
+      .then(() => window.imageCompression)
+      .catch((e) => {
+        imageCompressionPromise = null;
+        throw e;
+      });
+  }
   return imageCompressionPromise;
 }
 
 function loadHeic2Any() {
-  heic2anyPromise ||= loadScript(HEIC2ANY_URL).then(() => window.heic2any);
+  if (!heic2anyPromise) {
+    heic2anyPromise = loadScript(HEIC2ANY_URL)
+      .then(() => window.heic2any)
+      .catch((e) => {
+        heic2anyPromise = null;
+        throw e;
+      });
+  }
   return heic2anyPromise;
 }
 

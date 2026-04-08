@@ -121,10 +121,17 @@ describe CustomWizard::WizardController do
       expect(body["error"]).to eq(I18n.t("wizard.delayed_approval.cannot_skip"))
     end
 
-    it "does not set the locked flag if the actual skip still runs" do
-      # Verify the early-return does not fall through to `wizard.cleanup_on_skip!`.
+    it "early-returns with locked: true before the normal skip path runs" do
+      # The guard must fire BEFORE the regular skip logic — if it falls
+      # through, `cleanup_on_skip!` would run and we'd also lose the
+      # `locked: true` flag the frontend depends on. Assert both.
       CustomWizard::Wizard.any_instance.expects(:cleanup_on_skip!).never
+
       put "/w/super_mega_fun_wizard/skip.json"
+
+      expect(response.status).to eq(200)
+      body = JSON.parse(response.body)
+      expect(body["locked"]).to eq(true)
     end
 
     it "does not lock skip when marker is for a different wizard" do

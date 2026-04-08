@@ -176,9 +176,13 @@ export default Component.extend({
   async advance() {
     this.set("saving", true);
     try {
-      // Wait for any background uploads to land before sending the step
-      // save. This is what lets users click Next immediately after
-      // picking a file without being blocked by upload latency.
+      // Accept the Next click immediately even while an upload is in
+      // flight — the field-level `hasPendingUpload` flag lets
+      // validation pass, so the user never sees a "required" error.
+      // The navigation itself still waits for uploads to land before
+      // sending `step.save()`, because the server needs the final
+      // upload URL to persist. The visible effect: the button shows
+      // "Saving..." briefly instead of throwing an error.
       await this.wizardState.whenIdle();
       const response = await this.get("step").save();
       updateCachedWizard(CustomWizard.build(response["wizard"]));

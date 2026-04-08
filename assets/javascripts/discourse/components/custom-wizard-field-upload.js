@@ -75,16 +75,27 @@ export default class CustomWizardFieldUpload extends Component {
   }
 
   // The effective size cap for this field: per-field override, falling
-  // back to the site-wide `wizard_max_upload_size_kb`.
+  // back to the site-wide `wizard_max_upload_size_kb`. Uses a nullish
+  // check so an explicit `0` (which the server-side validator treats as
+  // "no cap") is preserved instead of falling through to the site
+  // default. `checkUploadSize` interprets 0 the same way.
   get effectiveMaxUploadSizeKb() {
-    return (
-      this.field?.max_upload_size_kb ||
-      this.siteSettings.wizard_max_upload_size_kb
-    );
+    const override = this.field?.max_upload_size_kb;
+    return override != null && override !== ""
+      ? override
+      : this.siteSettings.wizard_max_upload_size_kb;
   }
 
   get isBusy() {
     return this.processing || this.uppyUpload?.uploading;
+  }
+
+  // Uppy exposes `uploadProgress` as undefined/null before the first
+  // chunk lands, which would produce `aria-valuenow="undefined"` and
+  // an `NaN%` inline width. Default to 0 so the progressbar is always
+  // valid ARIA and visually flat at the start.
+  get uploadProgressValue() {
+    return this.uppyUpload?.uploadProgress || 0;
   }
 
   @discourseComputed(
