@@ -30,15 +30,14 @@ describe CustomWizardGuardian do
       expect(guardian.can_send_private_message?(other_user)).to eq(false)
     end
 
-    it "blocks self-edit via can_edit_user?" do
-      expect(guardian.can_edit_user?(user)).to eq(false)
-    end
-
-    it "does not block can_edit_user? for another user (falls through to core)" do
-      # The override only short-circuits self-edits. Editing OTHERS goes through
-      # core, which will deny based on permissions — but our override should NOT
-      # be the reason it's denied/allowed.
-      expect { guardian.can_edit_user?(other_user) }.not_to raise_error
+    it "does NOT override can_edit_user? at the Guardian layer" do
+      # Intentional: core Discourse routes several user-scoped READ endpoints
+      # (e.g. `UsersController#private_message_topic_tracking_state`) through
+      # `guardian.ensure_can_edit!(user)`. Overriding `can_edit_user?` here
+      # would 403 those reads and surface the generic "not permitted to view"
+      # popup on every wizard page load. Profile writes are gated at the
+      # controller level instead (see CustomWizardUsersController#update).
+      expect(guardian.can_edit_user?(user)).to eq(true)
     end
 
     context "when the user is staff" do

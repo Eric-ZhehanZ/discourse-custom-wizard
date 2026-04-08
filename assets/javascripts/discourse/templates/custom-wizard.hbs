@@ -10,15 +10,26 @@
     {{/if}}
 
     {{#if this.wizardState.hasProgress}}
-      <div class="wizard-progress">
-        <div class="white"></div>
-        <div class="black" style={{this.wizardState.barStyle}}></div>
-        <div class="screen"></div>
-        <span>{{i18n
+      <div
+        class="wizard-progress"
+        role="progressbar"
+        aria-valuenow={{this.wizardState.displayIndex}}
+        aria-valuemin="1"
+        aria-valuemax={{this.wizardState.totalSteps}}
+      >
+        <span class="wizard-progress__label">
+          {{i18n
             "wizard.step"
             current=this.wizardState.displayIndex
             total=this.wizardState.totalSteps
-          }}</span>
+          }}
+        </span>
+        <div class="wizard-progress__track">
+          <div
+            class="wizard-progress__fill"
+            style={{this.wizardState.barStyle}}
+          ></div>
+        </div>
       </div>
     {{/if}}
   </div>
