@@ -33,6 +33,36 @@ describe CustomWizard::Template do
     expect(user.reload.custom_fields["redirect_to_wizard"]).to eq(nil)
   end
 
+  context "with delayed-approval users in flight" do
+    fab!(:in_flight_user) do
+      Fabricate(
+        :user,
+        approved: true,
+        approved_at: Time.now,
+        approved_by: Discourse.system_user,
+      )
+    end
+
+    before do
+      template_json["after_signup"] = true
+      template_json["delay_approval_until_finish"] = true
+      template_json["required"] = true
+      CustomWizard::Template.save(template_json, skip_jobs: true)
+      in_flight_user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      in_flight_user.save_custom_fields(true)
+    end
+
+    it "revokes in-flight users and queues them for review" do
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: in_flight_user.id)
+
+      CustomWizard::Template.remove("super_mega_fun_wizard")
+
+      in_flight_user.reload
+      expect(in_flight_user.approved).to eq(false)
+      expect(in_flight_user.custom_fields["delayed_approval_wizard_id"]).to be_blank
+    end
+  end
+
   it "checks for wizard template existence" do
     expect(CustomWizard::Template.exists?("super_mega_fun_wizard")).to eq(true)
   end

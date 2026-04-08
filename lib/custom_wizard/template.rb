@@ -58,6 +58,7 @@ class CustomWizard::Template
     return false if !wizard
 
     ActiveRecord::Base.transaction do
+      revoke_delayed_approval_for_in_flight_users(wizard_id)
       ensure_wizard_upload_references!(wizard_id)
       PluginStore.remove(CustomWizard::PLUGIN_NAME, wizard.id)
       clear_user_wizard_redirect(wizard_id, after_time: !!wizard.after_time)
@@ -101,6 +102,20 @@ class CustomWizard::Template
     UserCustomField.where(name: "redirect_to_wizard", value: wizard_id).destroy_all
 
     Jobs.cancel_scheduled_job(:set_after_time_wizard, wizard_id: wizard_id) if after_time
+  end
+
+  def self.revoke_delayed_approval_for_in_flight_users(wizard_id)
+    user_ids =
+      UserCustomField
+        .where(name: "delayed_approval_wizard_id", value: wizard_id)
+        .pluck(:user_id)
+
+    User.where(id: user_ids).find_each do |user|
+      user.update!(approved: false, approved_by_id: nil, approved_at: nil)
+      user.custom_fields.delete("delayed_approval_wizard_id")
+      user.save_custom_fields(true)
+      Jobs.enqueue(:create_user_reviewable, user_id: user.id)
+    end
   end
 
   def self.after_signup_ids
