@@ -4,12 +4,22 @@
   </div>
   <div class="wizard-footer">
     {{#if this.customWizard}}
-      <img
-        src={{this.logoUrl}}
-        style="background-image: initial; width: 33px; height: 33px;"
-      />
+      <img class="wizard-footer-logo" src={{this.logoUrl}} alt="" />
     {{else}}
       <div class="discourse-logo"></div>
+    {{/if}}
+
+    {{#if this.wizardState.hasProgress}}
+      <div class="wizard-progress">
+        <div class="white"></div>
+        <div class="black" style={{this.wizardState.barStyle}}></div>
+        <div class="screen"></div>
+        <span>{{i18n
+            "wizard.step"
+            current=this.wizardState.displayIndex
+            total=this.wizardState.totalSteps
+          }}</span>
+      </div>
     {{/if}}
   </div>
 </div>

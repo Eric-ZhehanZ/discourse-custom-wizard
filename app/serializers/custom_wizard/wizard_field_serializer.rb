@@ -11,6 +11,10 @@ class CustomWizard::FieldSerializer < ::ApplicationSerializer
              :description,
              :image,
              :file_types,
+             :max_upload_size_kb,
+             :max_image_dimension,
+             :compress_images,
+             :convert_heic,
              :format,
              :limit,
              :property,
@@ -77,6 +81,26 @@ class CustomWizard::FieldSerializer < ::ApplicationSerializer
 
   def file_types
     object.file_types
+  end
+
+  def max_upload_size_kb
+    (object.max_upload_size_kb.presence || SiteSetting.wizard_max_upload_size_kb).to_i
+  end
+
+  def max_image_dimension
+    object.max_image_dimension.presence&.to_i
+  end
+
+  def include_max_image_dimension?
+    object.max_image_dimension.present?
+  end
+
+  def compress_images
+    ActiveModel::Type::Boolean.new.cast(object.compress_images)
+  end
+
+  def convert_heic
+    ActiveModel::Type::Boolean.new.cast(object.convert_heic)
   end
 
   def format

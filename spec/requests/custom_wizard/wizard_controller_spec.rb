@@ -110,21 +110,32 @@ describe CustomWizard::WizardController do
       sign_in(user)
     end
 
-    it "rejects skip with 403" do
+    it "returns a locked response that the frontend treats as a silent no-op" do
       put "/w/super_mega_fun_wizard/skip.json"
-      expect(response.status).to eq(403)
+      # A 200 (not 403) with a structured { locked: true } body so the
+      # frontend can silently ignore the attempt without popping a dialog.
+      # See models/custom-wizard.js CustomWizard.skip for the consumer.
+      expect(response.status).to eq(200)
       body = JSON.parse(response.body)
+      expect(body["locked"]).to eq(true)
       expect(body["error"]).to eq(I18n.t("wizard.delayed_approval.cannot_skip"))
     end
 
-    it "does not reject skip when marker is for a different wizard" do
+    it "does not set the locked flag if the actual skip still runs" do
+      # Verify the early-return does not fall through to `wizard.cleanup_on_skip!`.
+      CustomWizard::Wizard.any_instance.expects(:cleanup_on_skip!).never
+      put "/w/super_mega_fun_wizard/skip.json"
+    end
+
+    it "does not lock skip when marker is for a different wizard" do
       # Marker points at a different wizard id; the guard must NOT fire and
       # the request should fall through to normal skip logic.
       user.custom_fields["delayed_approval_wizard_id"] = "some_other_wizard"
       user.save_custom_fields(true)
 
       put "/w/super_mega_fun_wizard/skip.json"
-      expect(response.status).not_to eq(403)
+      body = JSON.parse(response.body)
+      expect(body["locked"]).to be_nil
     end
   end
 end

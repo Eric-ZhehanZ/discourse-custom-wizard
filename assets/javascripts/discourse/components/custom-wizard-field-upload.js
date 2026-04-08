@@ -4,10 +4,27 @@ import { getOwner } from "@ember/owner";
 import { service } from "@ember/service";
 import UppyUpload from "discourse/lib/uppy/uppy-upload";
 import discourseComputed from "discourse-common/utils/decorators";
-import I18n from "discourse-i18n";
+import { i18n } from "discourse-i18n";
+import {
+  checkUploadSize,
+  transformFileForUpload,
+} from "../lib/wizard-image-transforms";
 
 export default class CustomWizardFieldUpload extends Component {
   @service siteSettings;
+  @service wizardState;
+  @service dialog;
+
+  // Stage label shown on the button while transforms run before the
+  // actual upload begins ("converting" | "compressing" | null).
+  preparingStage = null;
+  // Set to true from the moment the user picks a file until Uppy's
+  // `uploadDone` fires. Used (together with the Uppy `uploading` flag) to
+  // lock the button and show spinners.
+  processing = false;
+  // When we call `wizardState.registerUpload()` we flip this so we know to
+  // call `releaseUpload()` exactly once on completion / failure / destroy.
+  pendingRegistered = false;
 
   @action
   setup() {
@@ -17,12 +34,25 @@ export default class CustomWizardFieldUpload extends Component {
       uploadDone: (upload) => {
         this.setProperties({
           "field.value": upload,
+          "field.hasPendingUpload": false,
           isImage: this.imageUploadFormats.includes(upload.extension),
         });
+        this.#releasePending();
+        this.set("processing", false);
         this.done();
       },
     });
-    this.uppyUpload.setup(document.getElementById(this.inputId));
+    // Intentionally call `setup()` with no file input so UppyUpload does
+    // NOT bind its own change listener. We handle file selection ourselves
+    // in `onFileChange` to run transforms before handing the file to Uppy.
+    this.uppyUpload.setup();
+  }
+
+  willDestroyElement() {
+    super.willDestroyElement(...arguments);
+    // If the component is torn down mid-upload (e.g. navigation), keep the
+    // global counter honest so the Done button isn't stuck disabled.
+    this.#releasePending();
   }
 
   get imageUploadFormats() {
@@ -44,15 +74,135 @@ export default class CustomWizardFieldUpload extends Component {
     return result;
   }
 
-  @discourseComputed("uppyUpload.uploading", "uppyUpload.uploadProgress")
-  uploadLabel() {
-    return this.uppyUpload?.uploading
-      ? `${I18n.t("wizard.uploading")} ${this.uppyUpload.uploadProgress}%`
-      : I18n.t("wizard.upload");
+  // The effective size cap for this field: per-field override, falling
+  // back to the site-wide `wizard_max_upload_size_kb`.
+  get effectiveMaxUploadSizeKb() {
+    return (
+      this.field?.max_upload_size_kb ||
+      this.siteSettings.wizard_max_upload_size_kb
+    );
+  }
+
+  get isBusy() {
+    return this.processing || this.uppyUpload?.uploading;
+  }
+
+  @discourseComputed(
+    "processing",
+    "preparingStage",
+    "uppyUpload.uploading",
+    "uppyUpload.uploadProgress"
+  )
+  uploadLabel(processing, preparingStage, uploading, progress) {
+    if (preparingStage === "converting") {
+      return i18n("wizard.upload_converting");
+    }
+    if (preparingStage === "compressing") {
+      return i18n("wizard.upload_compressing");
+    }
+    if (processing && !uploading) {
+      return i18n("wizard.upload_preparing");
+    }
+    if (uploading) {
+      return `${i18n("wizard.uploading")} ${progress || 0}%`;
+    }
+    return i18n("wizard.upload");
+  }
+
+  #registerPending() {
+    if (!this.pendingRegistered) {
+      this.wizardState.registerUpload();
+      this.set("pendingRegistered", true);
+    }
+    if (this.field) {
+      this.set("field.hasPendingUpload", true);
+    }
+  }
+
+  #releasePending() {
+    if (this.pendingRegistered) {
+      this.wizardState.releaseUpload();
+      this.set("pendingRegistered", false);
+    }
+    if (this.field) {
+      this.set("field.hasPendingUpload", false);
+    }
+  }
+
+  #handleError(error) {
+    this.#releasePending();
+    this.setProperties({
+      processing: false,
+      preparingStage: null,
+    });
+    this.dialog.alert(error);
   }
 
   @action
   chooseFiles() {
-    this.uppyUpload?.openPicker();
+    // The file input is rendered inline in the template (see .hbs). Click
+    // it programmatically so users see the normal OS picker.
+    const inputEl = document.getElementById(this.inputId);
+    if (inputEl) {
+      inputEl.value = "";
+      inputEl.click();
+    }
+  }
+
+  @action
+  async onFileChange(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.setProperties({
+      processing: true,
+      preparingStage: null,
+    });
+    this.#registerPending();
+
+    const onStage = (stage) => this.set("preparingStage", stage);
+
+    let transformed;
+    try {
+      transformed = await transformFileForUpload(
+        file,
+        {
+          convertHeic: this.field?.convert_heic,
+          compressImages: this.field?.compress_images,
+          maxImageDimension: this.field?.max_image_dimension,
+          maxUploadSizeKb: this.effectiveMaxUploadSizeKb,
+        },
+        onStage
+      );
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("wizard: unexpected transform error", e);
+      transformed = file;
+    }
+
+    this.set("preparingStage", null);
+
+    // Size gate AFTER transforms — if compression brought the file under
+    // the limit we accept it, otherwise we reject with a clear message.
+    const check = checkUploadSize(transformed, this.effectiveMaxUploadSizeKb);
+    if (!check.ok) {
+      this.#handleError(
+        i18n("wizard.upload_file_too_large", {
+          actual: check.actualKb,
+          max: check.maxKb,
+        })
+      );
+      return;
+    }
+
+    try {
+      await this.uppyUpload.addFiles([transformed]);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("wizard: addFiles failed", e);
+      this.#handleError(i18n("wizard.upload_error"));
+    }
   }
 }

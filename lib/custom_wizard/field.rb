@@ -16,6 +16,10 @@ class CustomWizard::Field
               :max_length,
               :char_counter,
               :file_types,
+              :max_upload_size_kb,
+              :max_image_dimension,
+              :compress_images,
+              :convert_heic,
               :format,
               :limit,
               :property,
@@ -44,6 +48,10 @@ class CustomWizard::Field
     @max_length = attrs[:max_length]
     @char_counter = attrs[:char_counter]
     @file_types = attrs[:file_types]
+    @max_upload_size_kb = attrs[:max_upload_size_kb]
+    @max_image_dimension = attrs[:max_image_dimension]
+    @compress_images = attrs[:compress_images]
+    @convert_heic = attrs[:convert_heic]
     @format = attrs[:format]
     @limit = attrs[:limit]
     @property = attrs[:property]
@@ -109,6 +117,10 @@ class CustomWizard::Field
       },
       upload: {
         file_types: ".jpg,.jpeg,.png",
+        max_upload_size_kb: nil,
+        max_image_dimension: nil,
+        compress_images: nil,
+        convert_heic: nil,
       },
       dropdown: {
         prefill: nil,

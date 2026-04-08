@@ -59,6 +59,14 @@ class ::CustomWizard::UpdateValidator
       )
     end
 
+    if type === "upload" && value.present? && !validate_file_size(value, field)
+      max_kb = (field.max_upload_size_kb.presence || SiteSetting.wizard_max_upload_size_kb).to_i
+      @updater.errors.add(
+        field_id,
+        I18n.t("wizard.field.file_too_large", label: label, max_kb: max_kb),
+      )
+    end
+
     if %w[date date_time].include?(type) && value.present? && !validate_date(value, format)
       @updater.errors.add(field_id, I18n.t("wizard.field.invalid_date"))
     end
@@ -92,6 +100,20 @@ class ::CustomWizard::UpdateValidator
       .split(",")
       .map { |t| t.gsub(".", "") }
       .include?(File.extname(value["original_filename"])[1..-1])
+  end
+
+  # Enforce the effective upload size cap (per-field override or the global
+  # `wizard_max_upload_size_kb` fallback). The client-side transforms compress
+  # images and surface errors BEFORE upload, but this server-side check is a
+  # last line of defence for non-image uploads and bypasses of the UI.
+  def validate_file_size(value, field)
+    max_kb = (field.max_upload_size_kb.presence || SiteSetting.wizard_max_upload_size_kb).to_i
+    return true if max_kb <= 0
+
+    filesize = value["filesize"] || value["file_size"] || value["size"]
+    return true if filesize.blank?
+
+    filesize.to_i <= (max_kb * 1024)
   end
 
   def validate_date(value, format)

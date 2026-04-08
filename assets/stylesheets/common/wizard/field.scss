@@ -1,9 +1,14 @@
 body.custom-wizard {
   .wizard-field {
-    margin-bottom: 1em;
+    margin-bottom: 1.5em;
 
     .field-label {
-      font-weight: 800;
+      display: block;
+      margin-bottom: 0.4em;
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--primary);
+      line-height: 1.35;
     }
 
     .field-image {
@@ -12,17 +17,20 @@ body.custom-wizard {
       img {
         max-width: 100%;
         max-height: 150px;
+        border-radius: 0.4em;
       }
     }
 
     .field-description {
       flex: 1;
-      color: var(--primary);
+      color: var(--primary-medium);
       margin-top: 0;
+      font-size: 0.9em;
+      line-height: 1.45;
 
       p {
-        margin: 0.3em 0;
-        line-height: 1.3em;
+        margin: 0.25em 0;
+        line-height: 1.45;
       }
 
       img {
@@ -33,7 +41,9 @@ body.custom-wizard {
     }
 
     &.invalid .wizard-focusable {
-      outline: 4px solid var(--danger);
+      outline: 3px solid var(--danger);
+      outline-offset: 1px;
+      border-radius: 0.4em;
     }
   }
 
@@ -71,14 +81,14 @@ body.custom-wizard {
   .url-field input {
     width: 100%;
     max-width: 500px;
-    font-size: 1.1487em;
-    padding: 6px;
-    transition: border-color 0.5s;
+    font-size: 1em;
+    padding: 0.55em 0.75em;
+    transition: border-color 0.3s ease;
   }
 
   .wizard-step-form .wizard-btn {
     display: block;
-    margin: 20px 0;
+    margin: 1em 0;
   }
 
   .wizard-image-row {
@@ -88,17 +98,23 @@ body.custom-wizard {
   }
 
   .wizard-image-preview {
-    margin-top: 10px;
+    margin-top: 0.75em;
+    width: 100%;
     max-width: 500px;
-    max-height: 500px;
+    max-height: 320px;
     overflow: hidden;
     display: block;
-    border: none;
+    border: 1px solid var(--primary-low);
+    border-radius: 0.5em;
     padding: 0;
+    box-sizing: border-box;
 
     img {
-      max-width: 100%;
-      max-height: 100%;
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 320px;
+      object-fit: contain;
     }
   }
 
@@ -107,6 +123,11 @@ body.custom-wizard {
   }
 
   .wizard-field-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    align-items: flex-start;
+
     .wizard-btn-upload-file {
       display: inline-block;
       position: relative;
@@ -120,15 +141,33 @@ body.custom-wizard {
       }
     }
 
-    .filename {
-      margin-left: 10px;
+    .wizard-upload-filename {
+      font-size: 0.9em;
+      color: var(--primary-medium);
+      word-break: break-all;
+      max-width: 100%;
+    }
+  }
+
+  .wizard-upload-progress-bar {
+    width: 100%;
+    max-width: 320px;
+    height: 0.6em;
+    background: var(--primary-low);
+    border-radius: 0.3em;
+    overflow: hidden;
+
+    &__fill {
+      height: 100%;
+      background: var(--tertiary);
+      transition: width 0.2s ease;
     }
   }
 
   input.date-picker {
-    font-size: 1.1487em;
-    padding: 6px;
-    transition: border-color 0.5s;
+    font-size: 1em;
+    padding: 0.55em 0.75em;
+    transition: border-color 0.3s ease;
   }
 
   .pika-single.is-bound {
@@ -141,8 +180,8 @@ body.custom-wizard {
       width: 90px;
 
       .select-kit-header {
-        font-size: 1.1487em;
-        padding: 6px;
+        font-size: 1em;
+        padding: 0.55em 0.75em;
       }
     }
   }
@@ -184,7 +223,8 @@ body.custom-wizard {
 
   .wizard-category-selector,
   .wizard-topic-selector {
-    width: 500px;
+    width: 100%;
+    max-width: 500px;
   }
 
   .wizard-topic-selector .topic-row {

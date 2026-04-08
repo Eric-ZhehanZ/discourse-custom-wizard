@@ -27,6 +27,14 @@ CustomWizard.reopenClass({
   skip(wizardId) {
     ajax({ url: `/w/${wizardId}/skip`, type: "PUT" })
       .then((result) => {
+        // The server returns `{ locked: true }` for delayed-approval users
+        // whose lockdown forbids skipping. Treat it as a silent no-op so we
+        // neither navigate away (which would bounce through the redirect
+        // middleware) nor show an alarming error dialog — the user is
+        // already on the correct page and should just stay there.
+        if (result && result.locked) {
+          return;
+        }
         CustomWizard.finished(result);
       })
       .catch(popupAjaxError);
@@ -34,7 +42,10 @@ CustomWizard.reopenClass({
 
   restart(wizardId) {
     ajax({ url: `/w/${wizardId}/skip`, type: "PUT" })
-      .then(() => {
+      .then((result) => {
+        if (result && result.locked) {
+          return;
+        }
         DiscourseURL.redirectTo(getUrl(`/w/${wizardId}`));
       })
       .catch(popupAjaxError);

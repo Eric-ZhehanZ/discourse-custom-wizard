@@ -22,17 +22,6 @@
 
 <div class="wizard-step-footer">
 
-  <div class="wizard-progress">
-    <div class="white"></div>
-    <div class="black" style={{this.barStyle}}></div>
-    <div class="screen"></div>
-    <span>{{i18n
-        "wizard.step"
-        current=this.step.displayIndex
-        total=this.wizard.totalSteps
-      }}</span>
-  </div>
-
   <div class="wizard-buttons">
     {{#if this.saving}}
       {{loading-spinner size="small"}}
@@ -73,8 +62,12 @@
         type="button"
         class="wizard-btn done"
         {{action "done"}}
-        disabled={{this.btnsDisabled}}
+        disabled={{this.finalSubmitDisabled}}
         tabindex={{this.primaryButtonIndex}}
+        title={{if
+          this.wizardState.hasPendingUploads
+          (i18n "wizard.upload_waiting_for_completion")
+        }}
       >
         {{i18n "wizard.done_custom"}}
       </button>

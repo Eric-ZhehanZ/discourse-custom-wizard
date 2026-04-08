@@ -154,6 +154,58 @@
       <Input @value={{this.field.file_types}} class="medium" />
     </div>
   </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.max_upload_size_kb"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        @value={{this.field.max_upload_size_kb}}
+        placeholder={{i18n "admin.wizard.field.max_upload_size_kb_placeholder"}}
+        class="medium"
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.max_image_dimension"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        @value={{this.field.max_image_dimension}}
+        placeholder={{i18n
+          "admin.wizard.field.max_image_dimension_placeholder"
+        }}
+        class="medium"
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.compress_images"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input @type="checkbox" @checked={{this.field.compress_images}} />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.convert_heic"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input @type="checkbox" @checked={{this.field.convert_heic}} />
+    </div>
+  </div>
 {{/if}}
 
 {{#if this.showLimit}}

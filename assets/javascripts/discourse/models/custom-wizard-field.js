@@ -27,6 +27,13 @@ export default EmberObject.extend(ValidState, {
   value: null,
   required: null,
 
+  // Set to `true` by `custom-wizard-field-upload` the moment the user
+  // picks a file. It stays true while the upload is in flight — it's
+  // what lets `check()` treat a required upload field as satisfied even
+  // before the server has confirmed the upload. See wizard-state.js for
+  // the full background-upload design.
+  hasPendingUpload: false,
+
   @discourseComputed("wizardId", "stepId", "id")
   i18nKey(wizardId, stepId, id) {
     return `${wizardId}.${stepId}.${id}`;
@@ -65,7 +72,11 @@ export default EmberObject.extend(ValidState, {
     if (type === "checkbox") {
       valid = val;
     } else if (type === "upload") {
-      valid = val && val.id > 0;
+      // Accept a field whose upload is still in flight — step.save() will
+      // await the uploads before sending the payload so the final value
+      // lands correctly. Without this fallback the user would see a
+      // "required" error while their file is still on the wire.
+      valid = (val && val.id > 0) || this.hasPendingUpload;
     } else if (StandardFieldValidation.indexOf(type) > -1) {
       valid = val && val.toString().length > 0;
     } else if (type === "url") {

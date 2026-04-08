@@ -1,26 +1,47 @@
 <div class={{this.wrapperClass}}>
   <input
     {{did-insert this.setup}}
-    disabled={{this.uppyUpload.uploading}}
+    disabled={{this.isBusy}}
     id={{this.inputId}}
     class="hidden-upload-field"
     type="file"
     accept={{this.field.file_types}}
+    {{on "change" this.onFileChange}}
     style="visibility: hidden; position: absolute;"
   />
   <DButton
     @translatedLabel={{this.uploadLabel}}
     @translatedTitle={{this.uploadLabel}}
     @icon="upload"
-    @disabled={{this.uppyUpload.uploading}}
+    @disabled={{this.isBusy}}
     @action={{this.chooseFiles}}
     class="wizard-btn wizard-btn-upload-file"
   />
+  {{#if this.uppyUpload.uploading}}
+    <div
+      class="wizard-upload-progress-bar"
+      role="progressbar"
+      aria-valuenow={{this.uppyUpload.uploadProgress}}
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <div
+        class="wizard-upload-progress-bar__fill"
+        style={{html-safe
+          (concat "width: " this.uppyUpload.uploadProgress "%")
+        }}
+      ></div>
+    </div>
+  {{/if}}
   {{#if this.field.value}}
     {{#if this.isImage}}
-      <img src={{this.field.value.url}} class="wizard-image-preview" />
+      <div class="wizard-image-preview">
+        <img src={{this.field.value.url}} alt="" />
+      </div>
     {{else}}
-      {{this.field.value.original_filename}}
+      <div class="wizard-upload-filename">
+        {{this.field.value.original_filename}}
+      </div>
     {{/if}}
   {{/if}}
 </div>

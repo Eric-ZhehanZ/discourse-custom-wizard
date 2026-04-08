@@ -42,7 +42,10 @@ acceptance("Step | Step", function (needs) {
       "Text inputs!"
     );
     assert.strictEqual(count(".wizard-step-form .wizard-field"), 6);
-    assert.ok(visible(".wizard-step-footer .wizard-progress"), true);
+    assert.ok(
+      visible(".wizard-column > .wizard-footer .wizard-progress"),
+      true
+    );
     assert.ok(visible(".wizard-step-footer .wizard-buttons"), true);
   });
 

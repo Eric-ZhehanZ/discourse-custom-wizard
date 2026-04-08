@@ -129,7 +129,13 @@ class CustomWizard::Builder
 
     params[:value] = standardise_boolean(params[:value]) if field_template["type"] === "checkbox"
 
-    params[:file_types] = field_template["file_types"] if field_template["type"] === "upload"
+    if field_template["type"] === "upload"
+      params[:file_types] = field_template["file_types"]
+      params[:max_upload_size_kb] = field_template["max_upload_size_kb"]
+      params[:max_image_dimension] = field_template["max_image_dimension"]
+      params[:compress_images] = field_template["compress_images"]
+      params[:convert_heic] = field_template["convert_heic"]
+    end
 
     if %w[date time date_time].include?(field_template["type"])
       params[:format] = field_template["format"]

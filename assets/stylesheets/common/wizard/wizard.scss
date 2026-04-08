@@ -17,73 +17,92 @@ body.custom-wizard {
     position: relative;
     z-index: 11;
     background-color: var(--secondary);
-    box-shadow: 0 5px 10px rgba(var(--primary-rgb), 0.15);
+    box-shadow: 0 8px 24px rgb(var(--primary-rgb), 0.1);
     box-sizing: border-box;
-    margin: 1.5em auto;
     padding: 0;
     max-width: 820px;
     min-width: 280px;
     width: 100%;
-    border: 1px solid var(--primary-low-mid);
-    border-radius: 5px;
-    margin: 0 auto 2.5em auto;
+    border: 1px solid var(--primary-low);
+    border-radius: 0.75em;
+    margin: 2em auto 2.5em auto;
 
     .wizard-field .input-area {
       margin: 0.5em 0;
     }
 
     .wizard-column-contents {
-      padding: 1.2em;
+      padding: 2em;
 
       h1 {
-        margin: 0;
+        margin: 0 0 0.25em 0;
+        font-size: 1.75em;
+        font-weight: 700;
+        line-height: 1.2;
       }
     }
 
     .wizard-footer {
-      border-top: 1px solid var(--primary-low-mid);
-      background-color: var(--secondary);
-      padding: 0.5em;
-      border-bottom-left-radius: 5px;
-      border-bottom-right-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      border-top: 1px solid var(--primary-low);
+      background-color: var(--primary-very-low);
+      padding: 0.85em 1.5em;
+      border-bottom-left-radius: 0.75em;
+      border-bottom-right-radius: 0.75em;
+
+      .wizard-footer-logo,
+      .discourse-logo {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+      }
     }
 
     .wizard-progress {
-      border: 1px solid var(--tertiary-high);
+      position: relative;
+      border: 1px solid var(--primary-low-mid);
+      border-radius: 0.35em;
+      overflow: hidden;
       width: 200px;
       height: 1.4em;
+      flex-shrink: 0;
 
       div {
         position: absolute;
-        height: 1.4em;
+        height: 100%;
       }
 
       .white {
         background: var(--secondary);
-        width: 200px;
+        width: 100%;
         z-index: 11;
       }
 
       .black {
-        background: var(--primary);
-        transition: width 0.3s;
+        background: var(--tertiary);
+        transition: width 0.3s ease;
         z-index: 12;
       }
 
       span {
         position: absolute;
-        font-size: var(--font-0);
-        mix-blend-mode: difference;
+        font-size: var(--font-down-1);
+        font-weight: 500;
         color: var(--secondary-or-primary);
         z-index: 13;
-        left: 1.5em;
-        line-height: 1.4em;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mix-blend-mode: difference;
       }
 
       .screen {
-        background-color: var(--tertiary-high);
-        mix-blend-mode: screen;
-        width: 200px;
+        background-color: transparent;
+        width: 100%;
         z-index: 14;
       }
     }
@@ -115,8 +134,12 @@ body.custom-wizard {
   .wizard-step-footer {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
+    gap: 0.75em;
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px solid var(--primary-very-low);
 
     .wizard-btn.next {
       min-width: 70px;
@@ -168,6 +191,71 @@ body.custom-wizard {
 
   .powered-by-discourse {
     display: none;
+  }
+
+  // Responsive: shrink padding, stack footer contents, and drop fixed
+  // widths so the wizard works comfortably on tablets and phones.
+  @media (width <= 768px) {
+    font-size: 1em;
+
+    .wizard-column {
+      margin: 1em auto 1.5em auto;
+      border-radius: 0.6em;
+
+      .wizard-column-contents {
+        padding: 1.25em;
+
+        h1 {
+          font-size: 1.4em;
+        }
+      }
+
+      .wizard-footer {
+        padding: 0.75em 1em;
+        gap: 0.75em;
+      }
+
+      .wizard-progress {
+        width: 140px;
+        height: 1.3em;
+      }
+    }
+
+    .wizard-step-footer {
+      flex-wrap: wrap;
+      gap: 0.5em;
+
+      .wizard-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5em;
+      }
+    }
+
+    .wizard-field {
+      .field-label {
+        font-size: 0.95em;
+      }
+    }
+  }
+
+  @media (width <= 480px) {
+    .wizard-column {
+      border-radius: 0.5em;
+      margin: 0.75em auto 1em auto;
+
+      .wizard-column-contents {
+        padding: 1em;
+      }
+
+      .wizard-footer {
+        padding: 0.65em 0.85em;
+      }
+
+      .wizard-progress {
+        width: 110px;
+      }
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 import Component from "@ember/component";
 import { alias, not, or } from "@ember/object/computed";
 import { schedule } from "@ember/runloop";
-import { htmlSafe } from "@ember/template";
+import { service } from "@ember/service";
 import $ from "jquery";
 import { cook } from "discourse/lib/text";
 import getUrl from "discourse-common/lib/get-url";
@@ -25,6 +25,7 @@ const uploadEndedEventKeys = [
 export default Component.extend({
   classNameBindings: [":wizard-step", "step.id"],
   saving: null,
+  wizardState: service(),
 
   init() {
     this._super(...arguments);
@@ -33,6 +34,10 @@ export default Component.extend({
 
   didReceiveAttrs() {
     this._super(...arguments);
+
+    // Publish the active wizard + step so the parent custom-wizard template
+    // can render the progress bar in the wizard footer, next to the logo.
+    this.wizardState.setActive(this.wizard, this.step);
 
     cook(this.step.translatedTitle).then((cookedTitle) => {
       this.set("cookedTitle", cookedTitle);
@@ -53,6 +58,11 @@ export default Component.extend({
     });
   },
 
+  willDestroyElement() {
+    this._super(...arguments);
+    this.wizardState.clear();
+  },
+
   didInsertElement() {
     this._super(...arguments);
     this.autoFocus();
@@ -63,7 +73,28 @@ export default Component.extend({
 
   showNextButton: not("step.final"),
   showDoneButton: alias("step.final"),
+  // `uploading` here tracks composer editor uploads (see
+  // `custom-wizard-composer-editor` appEvents). Wizard upload fields do
+  // NOT flip this — they track themselves via `wizardState.pendingUploads`
+  // so they can flow through the save/advance pipeline without blocking
+  // the Next button, per the background-upload design.
   btnsDisabled: or("saving", "uploading"),
+
+  // Done button (final step) is blocked until EVERY upload across the
+  // whole wizard has finished, so no field ends up with a null value at
+  // submit time. See wizard-state.js for the full design rationale.
+  @discourseComputed(
+    "saving",
+    "uploading",
+    "wizardState.hasPendingUploads",
+    "step.final"
+  )
+  finalSubmitDisabled(saving, uploading, hasPending, final) {
+    if (saving || uploading) {
+      return true;
+    }
+    return !!final && !!hasPending;
+  },
 
   @discourseComputed(
     "step.index",
@@ -113,19 +144,6 @@ export default Component.extend({
     this.showMessage(message);
   },
 
-  @discourseComputed("step.index", "wizard.totalSteps")
-  barStyle(displayIndex, totalSteps) {
-    let ratio = parseFloat(displayIndex) / parseFloat(totalSteps - 1);
-    if (ratio < 0) {
-      ratio = 0;
-    }
-    if (ratio > 1) {
-      ratio = 1;
-    }
-
-    return htmlSafe(`width: ${ratio * 200}px`);
-  },
-
   @discourseComputed("step.fields")
   includeSidebar(fields) {
     return !!fields.findBy("show_in_sidebar");
@@ -155,21 +173,26 @@ export default Component.extend({
     });
   },
 
-  advance() {
+  async advance() {
     this.set("saving", true);
-    this.get("step")
-      .save()
-      .then((response) => {
-        updateCachedWizard(CustomWizard.build(response["wizard"]));
+    try {
+      // Wait for any background uploads to land before sending the step
+      // save. This is what lets users click Next immediately after
+      // picking a file without being blocked by upload latency.
+      await this.wizardState.whenIdle();
+      const response = await this.get("step").save();
+      updateCachedWizard(CustomWizard.build(response["wizard"]));
 
-        if (response["final"]) {
-          CustomWizard.finished(response);
-        } else {
-          this.goNext(response);
-        }
-      })
-      .catch(() => this.animateInvalidFields())
-      .finally(() => this.set("saving", false));
+      if (response["final"]) {
+        CustomWizard.finished(response);
+      } else {
+        this.goNext(response);
+      }
+    } catch {
+      this.animateInvalidFields();
+    } finally {
+      this.set("saving", false);
+    }
   },
 
   actions: {
