@@ -21,15 +21,13 @@
     <div
       class="wizard-upload-progress-bar"
       role="progressbar"
-      aria-valuenow={{this.uppyUpload.uploadProgress}}
+      aria-valuenow={{this.uploadProgressValue}}
       aria-valuemin="0"
       aria-valuemax="100"
     >
       <div
         class="wizard-upload-progress-bar__fill"
-        style={{html-safe
-          (concat "width: " this.uppyUpload.uploadProgress "%")
-        }}
+        style={{html-safe (concat "width: " this.uploadProgressValue "%")}}
       ></div>
     </div>
   {{/if}}
