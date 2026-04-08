@@ -14,9 +14,17 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
   def skip
     params.require(:wizard_id)
 
+    # Delayed-approval users cannot skip the wizard they are locked into.
+    # We return a 200 response (not 403) with a structured `locked` flag so
+    # the frontend can silently ignore the attempt without triggering
+    # `popupAjaxError`. The HTML lockdown + Guardian denial already prevent
+    # any actual forum content access, so this endpoint's 4xx status added
+    # no real defense — it only caused a confusing dialog to flash on the
+    # user's screen. See the `delayed-approval lockdown` threat model in
+    # `lib/custom_wizard/extensions/guardian.rb` for the full denylist.
     if current_user && !current_user.staff? &&
          current_user.custom_fields["delayed_approval_wizard_id"] == params[:wizard_id].underscore
-      return render json: { error: I18n.t("wizard.delayed_approval.cannot_skip") }, status: 403
+      return(render json: { error: I18n.t("wizard.delayed_approval.cannot_skip"), locked: true })
     end
 
     if wizard.required && !wizard.completed? && wizard.permitted?
