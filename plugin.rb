@@ -168,6 +168,33 @@ after_initialize do
   on(:user_created, &delay_approval_handler)
   on(:user_unstaged, &delay_approval_handler)
 
+  on(:reviewable_created) do |reviewable|
+    next unless reviewable.is_a?(ReviewableUser)
+    next unless reviewable.target.is_a?(User)
+
+    user = reviewable.target
+
+    delayed_wizard_id = user.custom_fields["delayed_approval_wizard_id"]
+    candidate_wizard_id = nil
+
+    if delayed_wizard_id.present?
+      candidate_wizard_id = delayed_wizard_id
+    else
+      template = CustomWizard::Template.list(setting: "after_signup").first
+      candidate_wizard_id = template["id"] if template
+    end
+
+    next if candidate_wizard_id.blank?
+
+    wizard = CustomWizard::Wizard.create(candidate_wizard_id, user)
+    next if wizard.blank?
+    next if wizard.submissions.blank?
+
+    payload = reviewable.payload || {}
+    payload["wizard_submission_url"] = "/admin/wizards/submissions/#{candidate_wizard_id}"
+    reviewable.update!(payload: payload)
+  end
+
   add_to_class(:application_controller, :redirect_to_wizard_if_required) do
     return if current_user.blank?
 

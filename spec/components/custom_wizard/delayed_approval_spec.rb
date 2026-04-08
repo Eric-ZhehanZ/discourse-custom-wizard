@@ -89,3 +89,59 @@ describe "Delayed approval signup hook" do
     end
   end
 end
+
+describe "reviewable submission link" do
+  fab!(:user) { Fabricate(:user, approved: true) }
+  let(:template) { get_wizard_fixture("wizard") }
+
+  before do
+    SiteSetting.must_approve_users = true
+    template["after_signup"] = true
+    template["delay_approval_until_finish"] = true
+    template["required"] = true
+    CustomWizard::Template.save(template, skip_jobs: true)
+
+    # Create a wizard submission for the user
+    wizard = CustomWizard::Wizard.create("super_mega_fun_wizard", user)
+    submission = CustomWizard::Submission.new(wizard, { "step_1_field_1" => "answer" })
+    submission.save
+  end
+
+  # NOTE: ReviewableUser.needs_review! triggers :reviewable_created via
+  # `after_commit on: :create` (see Reviewable model). No manual DiscourseEvent
+  # trigger needed.
+
+  it "appends wizard_submission_url to the reviewable payload" do
+    reviewable =
+      ReviewableUser.needs_review!(
+        target: user,
+        created_by: Discourse.system_user,
+        reviewable_by_moderator: true,
+        payload: { username: user.username },
+      )
+    reviewable.reload
+
+    expect(reviewable.payload["wizard_submission_url"]).to eq(
+      "/admin/wizards/submissions/super_mega_fun_wizard"
+    )
+  end
+
+  it "does nothing for users without a wizard submission" do
+    # The before block creates a wizard submission for `user`. Use a fresh user
+    # who has no wizard submissions of their own.
+    other_user = Fabricate(:user, approved: true)
+    other_user.custom_fields.delete("delayed_approval_wizard_id")
+    other_user.save_custom_fields(true)
+
+    reviewable =
+      ReviewableUser.needs_review!(
+        target: other_user,
+        created_by: Discourse.system_user,
+        reviewable_by_moderator: true,
+        payload: { username: other_user.username },
+      )
+    reviewable.reload
+
+    expect(reviewable.payload["wizard_submission_url"]).to be_blank
+  end
+end
