@@ -392,7 +392,12 @@ class CustomWizard::Wizard
   end
 
   def self.delay_approval_until_finish_template
-    template = CustomWizard::Template.list(setting: "after_signup").first
+    # Consult the cached id list first so sites without any after_signup wizard
+    # pay only a cache hit per signup, not a PluginStoreRow query.
+    wizard_id = CustomWizard::Template.after_signup_ids.first
+    return nil unless wizard_id
+
+    template = CustomWizard::Template.find(wizard_id)
     return nil unless template
 
     ActiveRecord::Type::Boolean.new.cast(template["delay_approval_until_finish"]) ? template : nil

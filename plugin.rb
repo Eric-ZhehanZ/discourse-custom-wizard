@@ -185,7 +185,8 @@ after_initialize do
     # finishing Wizard A and this handler running, the fallback would pick
     # Wizard B — but the window is tiny and the misattribution only affects
     # the link target, not approval correctness.
-    candidate_wizard_id = delayed_wizard_id.presence || CustomWizard::Template.after_signup_ids.first
+    candidate_wizard_id =
+      delayed_wizard_id.presence || CustomWizard::Template.after_signup_ids.first
 
     next if candidate_wizard_id.blank?
 
@@ -211,6 +212,11 @@ after_initialize do
       return if request.path.start_with?(wizard_path_segment)
       return if request.path =~ %r{\A/session(/|\.|\z)}
       return if request.path =~ %r{\A/login(/|\.|\z)}
+      # /logout is not explicitly allowed: the normal wizard-completion path
+      # already calls log_off_user server-side (see StepsController#update),
+      # and manual logout via /logout 302s to /session/<username> which is
+      # covered by the /session exemption above. Users cannot get stuck.
+      return if request.path =~ %r{\A/logout(/|\.|\z)}
 
       redirect_to wizard_path_segment
       return

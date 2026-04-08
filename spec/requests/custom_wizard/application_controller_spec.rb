@@ -232,6 +232,11 @@ describe ApplicationController do
         expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
       end
 
+      it "does not redirect /logout requests" do
+        get "/logout"
+        expect(response).not_to redirect_to("/w/super-mega-fun-wizard")
+      end
+
       it "does not redirect non-HTML (JSON) requests" do
         get "/categories.json"
         expect(response).not_to redirect_to("/w/super-mega-fun-wizard")

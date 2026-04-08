@@ -89,7 +89,7 @@ en:
         after_signup: "Signup"
         after_signup_label: "Users directed to wizard after signup."
         delay_approval_until_finish: "Delay Approval"
-        delay_approval_until_finish_label: "Send users back to the admin review queue after they finish the wizard. Requires \"Signup\" to be enabled."
+        delay_approval_until_finish_label: "Send users back to the admin review queue after they finish the wizard. Forces the wizard to be required (skip is disabled) and logs users out on completion. Requires \"Signup\" to be enabled."
         after_time: "Time"
         after_time_label: "Users directed to wizard after start time:"
         after_time_time_label: "Start Time"
