@@ -1,22 +1,38 @@
 body.custom-wizard {
   input {
     display: inline-block;
-    padding: 4px 10px;
-    margin-bottom: 9px;
+    padding: 0.55em 0.75em;
+    margin-bottom: 0.5em;
     font-size: 1em;
-    line-height: 1;
+    line-height: 1.4;
     color: var(--primary);
     background-color: var(--secondary);
-    border: 1px solid var(--primary-medium);
-    border-radius: 0;
+    border: 1px solid var(--primary-low-mid);
+    border-radius: 0.4em;
     box-sizing: border-box;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: var(--tertiary);
+      outline: 0;
+    }
   }
 
   textarea {
     height: auto;
+    padding: 0.55em 0.75em;
     background-color: var(--secondary);
-    border: 1px solid var(--primary-medium);
+    border: 1px solid var(--primary-low-mid);
+    border-radius: 0.4em;
     min-height: 150px;
+    font-size: 1em;
+    line-height: 1.4;
+    box-sizing: border-box;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:focus {
       border-color: var(--tertiary);
@@ -29,7 +45,7 @@ body.custom-wizard {
   select,
   textarea {
     color: var(--primary);
-    caret-color: currentColor;
+    caret-color: currentcolor;
 
     &[class*="span"] {
       float: none;

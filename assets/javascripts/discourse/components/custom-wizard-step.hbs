@@ -22,17 +22,6 @@
 
 <div class="wizard-step-footer">
 
-  <div class="wizard-progress">
-    <div class="white"></div>
-    <div class="black" style={{this.barStyle}}></div>
-    <div class="screen"></div>
-    <span>{{i18n
-        "wizard.step"
-        current=this.step.displayIndex
-        total=this.wizard.totalSteps
-      }}</span>
-  </div>
-
   <div class="wizard-buttons">
     {{#if this.saving}}
       {{loading-spinner size="small"}}

@@ -1,40 +1,51 @@
 body.custom-wizard {
   .wizard-btn {
-    border-radius: 2px;
+    border-radius: 0.5em;
     font-size: var(--font-0);
+    font-weight: 500;
     border: 0;
-    padding: 0.5em;
-    transition: background-color 0.3s;
+    padding: 0.65em 1.25em;
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.1s ease;
     margin-right: 0.5em;
     text-decoration: none;
-    background-color: var(--secondary);
+    background-color: var(--primary-low);
     color: var(--primary-very-high);
-    box-shadow: 0 1px 4px rgba(var(--always-black-rgb), 0.4);
+    box-shadow: 0 1px 2px rgb(var(--always-black-rgb), 0.08);
     cursor: pointer;
 
     &.small {
-      padding: 0.25em 0.5em;
+      padding: 0.35em 0.75em;
       font-size: var(--font-down-1);
     }
 
     &:hover,
     &:focus {
-      background-color: var(--primary-low);
+      background-color: var(--primary-low-mid);
+      box-shadow: 0 2px 6px rgb(var(--always-black-rgb), 0.12);
     }
 
     &:active {
-      background-color: var(--primary-low-mid);
+      background-color: var(--primary-medium);
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgb(var(--always-black-rgb), 0.1);
     }
 
     &:disabled,
     &.disabled {
-      background-color: var(--primary-medium);
+      background-color: var(--primary-low);
+      color: var(--primary-medium);
+      box-shadow: none;
+      cursor: not-allowed;
     }
 
     .d-icon-chevron-right {
       margin-left: 0.25em;
       font-size: 0.8em;
     }
+
     .d-icon-chevron-left {
       margin-right: 0.25em;
       font-size: 0.8em;
@@ -44,11 +55,12 @@ body.custom-wizard {
   .wizard-btn.primary {
     background-color: var(--tertiary);
     color: var(--secondary);
-    box-shadow: 0 1px 4px rgba(var(--always-black-rgb), 0.6);
+    box-shadow: 0 1px 3px rgb(var(--always-black-rgb), 0.15);
 
     &:hover,
     &:focus {
       background-color: var(--tertiary-hover);
+      box-shadow: 0 2px 8px rgb(var(--always-black-rgb), 0.2);
     }
 
     &:active {
@@ -57,6 +69,7 @@ body.custom-wizard {
 
     &:disabled {
       background-color: var(--tertiary-low);
+      color: var(--secondary);
     }
   }
 

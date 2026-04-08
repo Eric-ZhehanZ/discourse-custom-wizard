@@ -133,7 +133,7 @@ acceptance("Wizard | Wizard", function (needs) {
       "Text inputs!"
     );
     assert.strictEqual(count(".wizard-step-form .wizard-field"), 6);
-    assert.ok(exists(".wizard-step-footer .wizard-progress"), true);
+    assert.ok(exists(".wizard-column > .wizard-footer .wizard-progress"), true);
     assert.ok(exists(".wizard-step-footer .wizard-buttons"), true);
   });
 
@@ -189,7 +189,7 @@ acceptance("Wizard | Guest access", function (needs) {
       "Text inputs!"
     );
     assert.strictEqual(count(".wizard-step-form .wizard-field"), 6);
-    assert.ok(exists(".wizard-step-footer .wizard-progress"), true);
+    assert.ok(exists(".wizard-column > .wizard-footer .wizard-progress"), true);
     assert.ok(exists(".wizard-step-footer .wizard-buttons"), true);
   });
 

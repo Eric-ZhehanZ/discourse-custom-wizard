@@ -1,7 +1,7 @@
 import Component from "@ember/component";
 import { alias, not, or } from "@ember/object/computed";
 import { schedule } from "@ember/runloop";
-import { htmlSafe } from "@ember/template";
+import { service } from "@ember/service";
 import $ from "jquery";
 import { cook } from "discourse/lib/text";
 import getUrl from "discourse-common/lib/get-url";
@@ -25,6 +25,7 @@ const uploadEndedEventKeys = [
 export default Component.extend({
   classNameBindings: [":wizard-step", "step.id"],
   saving: null,
+  wizardState: service(),
 
   init() {
     this._super(...arguments);
@@ -33,6 +34,10 @@ export default Component.extend({
 
   didReceiveAttrs() {
     this._super(...arguments);
+
+    // Publish the active wizard + step so the parent custom-wizard template
+    // can render the progress bar in the wizard footer, next to the logo.
+    this.wizardState.setActive(this.wizard, this.step);
 
     cook(this.step.translatedTitle).then((cookedTitle) => {
       this.set("cookedTitle", cookedTitle);
@@ -51,6 +56,11 @@ export default Component.extend({
         this.set("uploading", false);
       });
     });
+  },
+
+  willDestroyElement() {
+    this._super(...arguments);
+    this.wizardState.clear();
   },
 
   didInsertElement() {
@@ -111,19 +121,6 @@ export default Component.extend({
   _handleMessage: function () {
     const message = this.get("step.message");
     this.showMessage(message);
-  },
-
-  @discourseComputed("step.index", "wizard.totalSteps")
-  barStyle(displayIndex, totalSteps) {
-    let ratio = parseFloat(displayIndex) / parseFloat(totalSteps - 1);
-    if (ratio < 0) {
-      ratio = 0;
-    }
-    if (ratio > 1) {
-      ratio = 1;
-    }
-
-    return htmlSafe(`width: ${ratio * 200}px`);
   },
 
   @discourseComputed("step.fields")
