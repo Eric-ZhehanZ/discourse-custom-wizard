@@ -164,4 +164,62 @@ describe CustomWizard::UpdateValidator do
       I18n.t("wizard.field.invalid_date"),
     )
   end
+
+  context "upload file size validation" do
+    let(:upload_field) do
+      {
+        "id" => "step_2_field_7",
+        "label" => "Upload",
+        "type" => "upload",
+        "file_types" => ".jpg,.jpeg,.png",
+      }
+    end
+
+    before do
+      @template[:steps][1][:fields] << upload_field
+      CustomWizard::Template.save(@template)
+    end
+
+    def upload_value(filesize)
+      {
+        "id" => 1,
+        "url" => "/uploads/default/x.jpg",
+        "original_filename" => "x.jpg",
+        "filesize" => filesize,
+      }
+    end
+
+    it "accepts uploads under the site-wide cap" do
+      SiteSetting.wizard_max_upload_size_kb = 1024
+      updater = perform_validation("step_2", step_2_field_7: upload_value(500 * 1024))
+      expect(updater.errors.messages[:step_2_field_7]).to be_empty
+    end
+
+    it "rejects uploads over the site-wide cap" do
+      SiteSetting.wizard_max_upload_size_kb = 1024
+      updater = perform_validation("step_2", step_2_field_7: upload_value(2000 * 1024))
+      expect(updater.errors.messages[:step_2_field_7].first).to eq(
+        I18n.t("wizard.field.file_too_large", label: "Upload", max_kb: 1024),
+      )
+    end
+
+    it "honours the per-field override when smaller than the site-wide cap" do
+      SiteSetting.wizard_max_upload_size_kb = 10_240
+      @template[:steps][1][:fields].last[:max_upload_size_kb] = 512
+      CustomWizard::Template.save(@template)
+
+      updater = perform_validation("step_2", step_2_field_7: upload_value(800 * 1024))
+      expect(updater.errors.messages[:step_2_field_7].first).to eq(
+        I18n.t("wizard.field.file_too_large", label: "Upload", max_kb: 512),
+      )
+    end
+
+    it "skips the size check when filesize metadata is missing" do
+      SiteSetting.wizard_max_upload_size_kb = 1
+      # No filesize key at all — treat as unknown and don't reject.
+      value = { "id" => 1, "url" => "/uploads/default/x.jpg", "original_filename" => "x.jpg" }
+      updater = perform_validation("step_2", step_2_field_7: value)
+      expect(updater.errors.messages[:step_2_field_7]).to be_empty
+    end
+  end
 end

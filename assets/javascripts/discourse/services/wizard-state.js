@@ -2,16 +2,30 @@ import { tracked } from "@glimmer/tracking";
 import Service from "@ember/service";
 import { trustHTML } from "@ember/template";
 
-// Lightweight cross-controller state for the active wizard step.
+// Lightweight cross-controller state for the active wizard step and
+// background uploads.
 //
-// The `custom-wizard-step` component sets `activeStep` / `activeWizard` as
-// soon as it receives attrs, and clears them on destroy. The parent
-// `custom-wizard` template reads from this service to render the progress
-// bar in the wizard footer (next to the site logo) — keeping the DOM
-// structure clean while still reflecting the live step state.
+// `activeStep` / `activeWizard` are set by `custom-wizard-step` so the
+// parent template can render the progress bar next to the site logo.
+//
+// `pendingUploads` tracks in-flight uploads across ALL fields in the
+// wizard — set from `custom-wizard-field-upload` via
+// `registerUpload` / `releaseUpload`. The rule (per design):
+//
+//   - Start upload on select
+//   - Track uploads globally
+//   - DO NOT block step advances if the mandatory upload field has a file
+//     selected (even if it's still uploading in the background)
+//   - DO block final submission (the Done button) until ALL uploads are
+//     complete, so no field ends up with a null value at submit time.
 export default class WizardStateService extends Service {
   @tracked activeStep = null;
   @tracked activeWizard = null;
+  @tracked pendingUploads = 0;
+
+  // Promises created by `whenIdle()` while uploads are in-flight. Each one
+  // is resolved the moment `pendingUploads` drops back to zero.
+  #idleWaiters = [];
 
   setActive(wizard, step) {
     this.activeWizard = wizard;
@@ -21,6 +35,43 @@ export default class WizardStateService extends Service {
   clear() {
     this.activeWizard = null;
     this.activeStep = null;
+  }
+
+  registerUpload() {
+    this.pendingUploads = this.pendingUploads + 1;
+  }
+
+  releaseUpload() {
+    const next = this.pendingUploads - 1;
+    this.pendingUploads = next < 0 ? 0 : next;
+    if (this.pendingUploads === 0 && this.#idleWaiters.length) {
+      const resolvers = this.#idleWaiters;
+      this.#idleWaiters = [];
+      resolvers.forEach((resolve) => resolve());
+    }
+  }
+
+  resetUploads() {
+    this.pendingUploads = 0;
+    const resolvers = this.#idleWaiters;
+    this.#idleWaiters = [];
+    resolvers.forEach((resolve) => resolve());
+  }
+
+  // Returns a promise that resolves as soon as `pendingUploads` is 0. Used
+  // by the step save flow: the user can click Next while an upload is
+  // still running, and the step waits for the upload to finish before
+  // sending field values to the server. Resolves immediately if there are
+  // no uploads in flight.
+  whenIdle() {
+    if (this.pendingUploads === 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => this.#idleWaiters.push(resolve));
+  }
+
+  get hasPendingUploads() {
+    return this.pendingUploads > 0;
   }
 
   get hasProgress() {

@@ -73,7 +73,28 @@ export default Component.extend({
 
   showNextButton: not("step.final"),
   showDoneButton: alias("step.final"),
+  // `uploading` here tracks composer editor uploads (see
+  // `custom-wizard-composer-editor` appEvents). Wizard upload fields do
+  // NOT flip this — they track themselves via `wizardState.pendingUploads`
+  // so they can flow through the save/advance pipeline without blocking
+  // the Next button, per the background-upload design.
   btnsDisabled: or("saving", "uploading"),
+
+  // Done button (final step) is blocked until EVERY upload across the
+  // whole wizard has finished, so no field ends up with a null value at
+  // submit time. See wizard-state.js for the full design rationale.
+  @discourseComputed(
+    "saving",
+    "uploading",
+    "wizardState.hasPendingUploads",
+    "step.final"
+  )
+  finalSubmitDisabled(saving, uploading, hasPending, final) {
+    if (saving || uploading) {
+      return true;
+    }
+    return !!final && !!hasPending;
+  },
 
   @discourseComputed(
     "step.index",
@@ -152,21 +173,26 @@ export default Component.extend({
     });
   },
 
-  advance() {
+  async advance() {
     this.set("saving", true);
-    this.get("step")
-      .save()
-      .then((response) => {
-        updateCachedWizard(CustomWizard.build(response["wizard"]));
+    try {
+      // Wait for any background uploads to land before sending the step
+      // save. This is what lets users click Next immediately after
+      // picking a file without being blocked by upload latency.
+      await this.wizardState.whenIdle();
+      const response = await this.get("step").save();
+      updateCachedWizard(CustomWizard.build(response["wizard"]));
 
-        if (response["final"]) {
-          CustomWizard.finished(response);
-        } else {
-          this.goNext(response);
-        }
-      })
-      .catch(() => this.animateInvalidFields())
-      .finally(() => this.set("saving", false));
+      if (response["final"]) {
+        CustomWizard.finished(response);
+      } else {
+        this.goNext(response);
+      }
+    } catch {
+      this.animateInvalidFields();
+    } finally {
+      this.set("saving", false);
+    }
   },
 
   actions: {

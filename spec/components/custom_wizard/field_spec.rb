@@ -43,4 +43,34 @@ describe CustomWizard::Field do
       %w[components helpers lib stylesheets templates],
     )
   end
+
+  describe "upload field options" do
+    it "exposes the new per-field size and transform options" do
+      field =
+        CustomWizard::Field.new(
+          id: "upload_field",
+          type: "upload",
+          max_upload_size_kb: 2048,
+          max_image_dimension: 1600,
+          compress_images: true,
+          convert_heic: true,
+        )
+
+      expect(field.max_upload_size_kb).to eq(2048)
+      expect(field.max_image_dimension).to eq(1600)
+      expect(field.compress_images).to eq(true)
+      expect(field.convert_heic).to eq(true)
+    end
+
+    it "registers default upload type attributes" do
+      upload_defaults = CustomWizard::Field.types[:upload]
+      expect(upload_defaults).to include(
+        :file_types,
+        :max_upload_size_kb,
+        :max_image_dimension,
+        :compress_images,
+        :convert_heic,
+      )
+    end
+  end
 end

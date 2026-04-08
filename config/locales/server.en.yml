@@ -25,6 +25,7 @@ en:
       required: "%{label} is required."
       not_url: "%{label} must be a valid url"
       invalid_file: "%{label} must be a %{types}"
+      file_too_large: "%{label} must be no larger than %{max_kb} KB"
       invalid_date: "Invalid date"
       invalid_time: "Invalid time"
 
@@ -66,5 +67,6 @@ en:
     custom_wizard_enabled: "Enable custom wizards."
     wizard_redirect_exclude_paths: "Routes excluded from wizard redirects."
     wizard_recognised_image_upload_formats: "File types which will result in upload displaying an image preview"
+    wizard_max_upload_size_kb: "Default maximum size (in KB) for wizard upload fields. Individual upload fields can override this."
     wizard_apis_enabled: "Enable API features (experimental)."
     wizard_critical_notices_on_dashboard: "Show critical notices about the custom wizard plugin on the admin dashboard."

@@ -62,8 +62,12 @@
         type="button"
         class="wizard-btn done"
         {{action "done"}}
-        disabled={{this.btnsDisabled}}
+        disabled={{this.finalSubmitDisabled}}
         tabindex={{this.primaryButtonIndex}}
+        title={{if
+          this.wizardState.hasPendingUploads
+          (i18n "wizard.upload_waiting_for_completion")
+        }}
       >
         {{i18n "wizard.done_custom"}}
       </button>
