@@ -144,4 +144,44 @@ describe "reviewable submission link" do
 
     expect(reviewable.payload["wizard_submission_url"]).to be_blank
   end
+
+  it "uses the delayed_approval_wizard_id marker when present" do
+    # Explicitly exercise the marker branch: if a reviewable is somehow created
+    # while the user is still in delayed-approval lockdown, we use the marker
+    # directly rather than the fallback.
+    user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+    user.save_custom_fields(true)
+
+    reviewable =
+      ReviewableUser.needs_review!(
+        target: user,
+        created_by: Discourse.system_user,
+        reviewable_by_moderator: true,
+        payload: { username: user.username },
+      )
+    reviewable.reload
+
+    expect(reviewable.payload["wizard_submission_url"]).to eq(
+      "/admin/wizards/submissions/super_mega_fun_wizard"
+    )
+  end
+
+  it "ignores non-user reviewables" do
+    # The listener must early-return for reviewable types that aren't ReviewableUser.
+    # We use a ReviewableQueuedPost as a representative non-user reviewable type.
+    category = Fabricate(:category)
+    topic = Fabricate(:topic, category: category)
+    post = Fabricate(:post, topic: topic)
+
+    reviewable =
+      ReviewableQueuedPost.needs_review!(
+        target: post,
+        created_by: Discourse.system_user,
+        reviewable_by_moderator: true,
+        payload: { raw: "test post" },
+      )
+    reviewable.reload
+
+    expect(reviewable.payload["wizard_submission_url"]).to be_blank
+  end
 end

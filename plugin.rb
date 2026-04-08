@@ -173,16 +173,23 @@ after_initialize do
     next unless reviewable.target.is_a?(User)
 
     user = reviewable.target
-
     delayed_wizard_id = user.custom_fields["delayed_approval_wizard_id"]
-    candidate_wizard_id = nil
 
-    if delayed_wizard_id.present?
-      candidate_wizard_id = delayed_wizard_id
-    else
-      template = CustomWizard::Template.list(setting: "after_signup").first
-      candidate_wizard_id = template["id"] if template
-    end
+    # The marker is normally cleared by `cleanup_on_complete!` BEFORE the
+    # CreateUserReviewable job enqueues (see Task 8), so on the wizard-finish
+    # path we fall back to the active after_signup wizard — which is the one
+    # the user just finished. The marker branch only fires for edge cases where
+    # a reviewable is created while the user is still mid-lockdown.
+    candidate_wizard_id =
+      if delayed_wizard_id.present?
+        delayed_wizard_id
+      else
+        # NOTE: if an admin changes the after_signup wizard between the user
+        # finishing Wizard A and this handler running, the fallback would pick
+        # Wizard B — but the window is tiny and the misattribution only affects
+        # the link target, not approval correctness.
+        CustomWizard::Template.after_signup_ids.first
+      end
 
     next if candidate_wizard_id.blank?
 
