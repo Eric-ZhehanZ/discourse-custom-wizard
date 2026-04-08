@@ -117,12 +117,14 @@ describe "reviewable submission link" do
         target: user,
         created_by: Discourse.system_user,
         reviewable_by_moderator: true,
-        payload: { username: user.username },
+        payload: {
+          username: user.username,
+        },
       )
     reviewable.reload
 
     expect(reviewable.payload["wizard_submission_url"]).to eq(
-      "/admin/wizards/submissions/super_mega_fun_wizard"
+      "/admin/wizards/submissions/super_mega_fun_wizard",
     )
   end
 
@@ -138,7 +140,9 @@ describe "reviewable submission link" do
         target: other_user,
         created_by: Discourse.system_user,
         reviewable_by_moderator: true,
-        payload: { username: other_user.username },
+        payload: {
+          username: other_user.username,
+        },
       )
     reviewable.reload
 
@@ -157,12 +161,14 @@ describe "reviewable submission link" do
         target: user,
         created_by: Discourse.system_user,
         reviewable_by_moderator: true,
-        payload: { username: user.username },
+        payload: {
+          username: user.username,
+        },
       )
     reviewable.reload
 
     expect(reviewable.payload["wizard_submission_url"]).to eq(
-      "/admin/wizards/submissions/super_mega_fun_wizard"
+      "/admin/wizards/submissions/super_mega_fun_wizard",
     )
   end
 
@@ -178,7 +184,9 @@ describe "reviewable submission link" do
         target: post,
         created_by: Discourse.system_user,
         reviewable_by_moderator: true,
-        payload: { raw: "test post" },
+        payload: {
+          raw: "test post",
+        },
       )
     reviewable.reload
 

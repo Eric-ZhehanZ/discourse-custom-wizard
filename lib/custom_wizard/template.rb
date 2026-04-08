@@ -74,9 +74,7 @@ class CustomWizard::Template
 
     # Enqueue review jobs AFTER the transaction commits so a late rollback
     # doesn't leave Sidekiq processing an unrolled-back revocation.
-    revoked_user_ids.each do |user_id|
-      Jobs.enqueue(:create_user_reviewable, user_id: user_id)
-    end
+    revoked_user_ids.each { |user_id| Jobs.enqueue(:create_user_reviewable, user_id: user_id) }
 
     clear_cache_keys
 
@@ -114,13 +112,11 @@ class CustomWizard::Template
 
   def self.revoke_delayed_approval_for_in_flight_users(wizard_id)
     user_ids =
-      UserCustomField
-        .where(name: "delayed_approval_wizard_id", value: wizard_id)
-        .pluck(:user_id)
+      UserCustomField.where(name: "delayed_approval_wizard_id", value: wizard_id).pluck(:user_id)
 
-    User.where(id: user_ids).find_each do |user|
-      CustomWizard::Wizard.revoke_delayed_approval_db!(user)
-    end
+    User
+      .where(id: user_ids)
+      .find_each { |user| CustomWizard::Wizard.revoke_delayed_approval_db!(user) }
 
     user_ids
   end
