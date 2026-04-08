@@ -62,48 +62,32 @@ body.custom-wizard {
     }
 
     .wizard-progress {
-      position: relative;
-      border: 1px solid var(--primary-low-mid);
-      border-radius: 0.35em;
-      overflow: hidden;
-      width: 200px;
-      height: 1.4em;
+      display: flex;
+      align-items: center;
+      gap: 0.65em;
       flex-shrink: 0;
 
-      div {
-        position: absolute;
-        height: 100%;
-      }
-
-      .white {
-        background: var(--secondary);
-        width: 100%;
-        z-index: 11;
-      }
-
-      .black {
-        background: var(--tertiary);
-        transition: width 0.3s ease;
-        z-index: 12;
-      }
-
-      span {
-        position: absolute;
+      &__label {
         font-size: var(--font-down-1);
         font-weight: 500;
-        color: var(--secondary-or-primary);
-        z-index: 13;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        mix-blend-mode: difference;
+        color: var(--primary-high);
+        white-space: nowrap;
+        letter-spacing: 0.01em;
       }
 
-      .screen {
-        background-color: transparent;
-        width: 100%;
-        z-index: 14;
+      &__track {
+        width: 140px;
+        height: 4px;
+        background: var(--primary-low);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      &__fill {
+        height: 100%;
+        background: var(--tertiary);
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 999px;
       }
     }
   }
@@ -203,7 +187,7 @@ body.custom-wizard {
       border-radius: 0.6em;
 
       .wizard-column-contents {
-        padding: 1.25em;
+        padding: 1.75em;
 
         h1 {
           font-size: 1.4em;
@@ -211,13 +195,12 @@ body.custom-wizard {
       }
 
       .wizard-footer {
-        padding: 0.75em 1em;
+        padding: 0.75em 1.25em;
         gap: 0.75em;
       }
 
-      .wizard-progress {
-        width: 140px;
-        height: 1.3em;
+      .wizard-progress__track {
+        width: 100px;
       }
     }
 
@@ -245,15 +228,19 @@ body.custom-wizard {
       margin: 0.75em auto 1em auto;
 
       .wizard-column-contents {
-        padding: 1em;
+        padding: 1.35em;
       }
 
       .wizard-footer {
-        padding: 0.65em 0.85em;
+        padding: 0.65em 1em;
       }
 
-      .wizard-progress {
-        width: 110px;
+      .wizard-progress__track {
+        width: 70px;
+      }
+
+      .wizard-progress__label {
+        font-size: 0.75em;
       }
     }
   }

@@ -13,10 +13,20 @@
 #     uses, so a crafted request can't bypass the HTML lockdown.
 #
 # The denylist is intentionally narrow and targets the upstream content gates
-# (`can_see_topic?`, `can_see_post?`, `can_create_post?`, `can_send_private_message?`,
-# self-edit `can_edit_user?`). Downstream operations like `can_like?`, `can_bookmark?`,
-# and reaction endpoints are funneled through `can_see_post?` in core, so blocking
-# the upstream gate is sufficient.
+# (`can_see_topic?`, `can_see_post?`, `can_create_post?`, `can_send_private_message?`).
+# Downstream operations like `can_like?`, `can_bookmark?`, and reaction endpoints
+# are funneled through `can_see_post?` in core, so blocking the upstream gate is
+# sufficient.
+#
+# Self-edit is deliberately NOT handled at the Guardian layer: core Discourse
+# uses `can_edit_user?` as the permission check for several user-scoped READ
+# endpoints (notably `UsersController#private_message_topic_tracking_state`,
+# which the Ember bootstrap fetches on every page load). Overriding it here
+# would make those reads 403 and surface the generic "You are not permitted
+# to view the requested resource" popup as soon as the user lands on the
+# wizard page. The actual profile-update threat is handled at the controller
+# level in `CustomWizardUsersController#update`, which is a write-only gate
+# and does not affect data-read endpoints.
 #
 # Acknowledged gaps (per the design spec):
 #   - Category and group names visible via `/site.json` (normally public anyway).
@@ -57,11 +67,6 @@ module CustomWizardGuardian
 
   def can_send_private_message?(target, notify_moderators: false)
     return false if in_delayed_approval_window?
-    super
-  end
-
-  def can_edit_user?(user)
-    return false if in_delayed_approval_window? && user && @user.id == user.id
     super
   end
 end
