@@ -331,12 +331,7 @@ class CustomWizard::Wizard
   end
 
   def trigger_delayed_approval_revocation!
-    User.transaction do
-      user.update!(approved: false, approved_by_id: nil, approved_at: nil)
-      user.custom_fields.delete("delayed_approval_wizard_id")
-      user.save_custom_fields(true)
-    end
-
+    self.class.revoke_delayed_approval_db!(user)
     Jobs.enqueue(:create_user_reviewable, user_id: user.id)
   end
 
@@ -401,6 +396,18 @@ class CustomWizard::Wizard
     return nil unless template
 
     ActiveRecord::Type::Boolean.new.cast(template["delay_approval_until_finish"]) ? template : nil
+  end
+
+  # DB-only revocation of a single user's delayed-approval state.
+  # Safe to call inside an outer transaction. Does NOT enqueue a review job —
+  # the caller is responsible for that AFTER any outer transaction commits,
+  # to avoid racing the commit against Sidekiq picking up the job.
+  def self.revoke_delayed_approval_db!(user)
+    User.transaction do
+      user.update!(approved: false, approved_by_id: nil, approved_at: nil)
+      user.custom_fields.delete("delayed_approval_wizard_id")
+      user.save_custom_fields(true)
+    end
   end
 
   def self.prompt_completion(user)

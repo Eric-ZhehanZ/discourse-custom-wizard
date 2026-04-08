@@ -59,7 +59,34 @@ describe CustomWizard::Template do
 
       in_flight_user.reload
       expect(in_flight_user.approved).to eq(false)
+      expect(in_flight_user.approved_by_id).to be_nil
+      expect(in_flight_user.approved_at).to be_nil
       expect(in_flight_user.custom_fields["delayed_approval_wizard_id"]).to be_blank
+    end
+
+    it "revokes multiple in-flight users" do
+      other_user = Fabricate(:user, approved: true)
+      other_user.custom_fields["delayed_approval_wizard_id"] = "super_mega_fun_wizard"
+      other_user.save_custom_fields(true)
+
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: in_flight_user.id)
+      Jobs.expects(:enqueue).with(:create_user_reviewable, user_id: other_user.id)
+
+      CustomWizard::Template.remove("super_mega_fun_wizard")
+
+      expect(in_flight_user.reload.approved).to eq(false)
+      expect(other_user.reload.approved).to eq(false)
+    end
+
+    it "does not revoke users marked for a different wizard" do
+      other_user = Fabricate(:user, approved: true)
+      other_user.custom_fields["delayed_approval_wizard_id"] = "some_other_wizard"
+      other_user.save_custom_fields(true)
+
+      CustomWizard::Template.remove("super_mega_fun_wizard")
+
+      expect(other_user.reload.approved).to eq(true)
+      expect(other_user.custom_fields["delayed_approval_wizard_id"]).to eq("some_other_wizard")
     end
   end
 
