@@ -39,7 +39,18 @@ export default class CustomWizardFieldUpload extends Component {
         });
         this.#releasePending();
         this.set("processing", false);
-        this.done();
+        // NOTE: do NOT call `this.done()` here. `done` is not a method
+        // on this component and no parent passes it via `{{component}}`.
+        // The call was dead code inherited from a much older template
+        // that once wired up a `done` action. Calling an undefined
+        // property throws a TypeError synchronously inside Uppy's
+        // `upload-success` handler, which aborted the handler before
+        // `#triggerInProgressUploadsEvent()` and `#allUploadsComplete()`
+        // ran. The consequence was that `UppyUpload#reset()` never
+        // fired, leaving `uploading` true, `uploadProgress` stuck at
+        // 100, and Uppy's internal file list populated — so the button
+        // was locked at "Uploading 100%" and the next `addFiles` call
+        // tripped the "Cannot upload more than 1 file" guard.
       },
     });
     // Intentionally call `setup()` with no file input so UppyUpload does
