@@ -1,0 +1,660 @@
+zh_CN:
+  js:
+    wizard:
+      complete_custom: "完成 {{name}}"
+      completed: "您已完成此向导。"
+      not_permitted: "您没有权限访问此向导。"
+      none: "这里没有向导。"
+      return_to_site: "返回 {{siteName}}。"
+      requires_login: "您需要登录才能访问此向导。"
+      reset: "重置此向导。"
+      step_not_permitted: "您没有权限查看此步骤。"
+      incomplete_submission:
+        title: "继续编辑您在 %{date} 的草稿提交？"
+        resume: "继续"
+        restart: "重新开始"
+      x_characters:
+        one: "%{count} 个字符"
+        other: "%{count} 个字符"
+      quit: "退出"
+      done_custom: "完成"
+      back: "上一步"
+      next: "下一步"
+      step: "%{current} / %{total}"
+      upload: "上传"
+      uploading: "正在上传..."
+      upload_error: "抱歉，上传该文件时出错。请重试。"
+      upload_preparing: "准备中..."
+      upload_compressing: "正在压缩..."
+      upload_converting: "正在转换..."
+      upload_file_too_large: "此文件为 %{actual} KB，超过了 %{max} KB 的限制。"
+      upload_waiting_for_completion: "正在等待上传完成..."
+
+    wizard_composer:
+      show_preview: "预览帖子"
+      hide_preview: "编辑帖子"
+      quote_post_title: "引用整篇帖子"
+      bold_label: "B"
+      bold_title: "加粗"
+      bold_text: "加粗文本"
+      italic_label: "I"
+      italic_title: "斜体"
+      italic_text: "斜体文本"
+      link_title: "超链接"
+      link_description: "在此输入链接描述"
+      link_dialog_title: "插入超链接"
+      link_optional_text: "可选标题"
+      link_url_placeholder: "http://example.com"
+      quote_title: "引用"
+      quote_text: "引用"
+      blockquote_text: "引用"
+      code_title: "预格式化文本"
+      code_text: "将预格式化文本缩进 4 个空格"
+      paste_code_text: "在此输入或粘贴代码"
+      upload_title: "上传"
+      upload_description: "在此输入上传描述"
+      olist_title: "有序列表"
+      ulist_title: "无序列表"
+      list_item: "列表项"
+      toggle_direction: "切换方向"
+      help: "Markdown 编辑帮助"
+      collapse: "最小化编辑器面板"
+      abandon: "关闭编辑器并丢弃草稿"
+      modal_ok: "确定"
+      modal_cancel: "取消"
+      cant_send_pm: "抱歉，您无法向 %{username} 发送消息。"
+      yourself_confirm:
+        title: "您是否忘记添加收件人？"
+        body: "目前此消息仅发送给您自己！"
+
+    realtime_validations:
+      similar_topics:
+        insufficient_characters: "请至少输入 5 个字符以开始查找相似主题"
+        insufficient_characters_categories: "请至少输入 5 个字符以在 %{catLinks} 中查找相似主题"
+        results: "您的主题与以下内容相似..."
+        no_results: "没有相似的主题。"
+        loading: "正在查找相似主题..."
+        show: "显示"
+
+  admin_js:
+    admin:
+      wizard:
+        label: "向导"
+        nav_label: "向导"
+        select: "选择一个向导"
+        create: "创建向导"
+        name: "名称"
+        name_placeholder: "向导名称"
+        background: "背景"
+        background_placeholder: "#hex"
+        save_submissions: "保存"
+        save_submissions_label: "保存向导提交记录。"
+        multiple_submissions: "多次提交"
+        multiple_submissions_label: "用户可以多次提交。"
+        after_signup: "注册后"
+        after_signup_label: "用户注册后引导至向导。"
+        delay_approval_until_finish: "延迟审批"
+        delay_approval_until_finish_label: "在用户完成向导后将其送回管理员审核队列。强制向导为必填（禁止跳过），完成时注销用户。需要启用\u201C注册后\u201D。"
+        after_time: "定时"
+        after_time_label: "在指定时间后引导用户至向导："
+        after_time_time_label: "开始时间"
+        after_time_modal:
+          title: "向导开始时间"
+          date: "日期"
+          time: "时间"
+          done: "设置时间"
+          clear: "清除"
+        after_time_groups:
+          label: 定时群组
+          description: 在指定时间后引导至向导的群组。
+        required: "必填"
+        required_label: "用户不能跳过向导。"
+        prompt_completion: "提示"
+        prompt_completion_label: "提示用户完成向导。"
+        restart_on_revisit: "重新开始"
+        restart_on_revisit_label: "每次访问时清除提交记录。"
+        resume_on_revisit: "恢复"
+        resume_on_revisit_label: "每次访问时询问用户是否恢复。"
+        theme_id: "主题"
+        no_theme: "选择主题（可选）"
+        save: "保存更改"
+        remove: "删除向导"
+        add: "添加"
+        url: "URL"
+        key: "键"
+        value: "值"
+        profile: "个人资料"
+        type: "类型"
+        none: "请选择"
+        submission_key: "提交键"
+        param_key: "参数"
+        group: "群组"
+        permitted: "允许"
+        advanced: "高级"
+        undo: "撤销"
+        clear: "清除"
+        select_type: "选择类型"
+        condition: "条件"
+        index: "索引"
+        edit_columns: "编辑列"
+        expand_text: "展开阅读"
+        collapse_text: "收起"
+        category_settings:
+          custom_wizard:
+            title: "自定义向导"
+            create_topic_wizard: "选择一个向导来替换此分类中的新主题编辑器。"
+
+        message:
+          wizard:
+            select: "选择一个向导，或创建一个新向导"
+            edit: "您正在编辑向导"
+            create: "您正在创建新向导"
+            documentation: "查看向导文档"
+            contact: "联系开发者"
+          field:
+            type: "选择字段类型"
+            edit: "您正在编辑字段"
+            documentation: "查看字段文档"
+          action:
+            type: "选择操作类型"
+            edit: "您正在编辑操作"
+            documentation: "查看操作文档"
+          custom_fields:
+            create: "查看、创建、编辑和删除自定义字段"
+            saved: "已保存自定义字段"
+            error: "保存失败：{{messages}}"
+            documentation: 查看自定义字段文档
+          manager:
+            info: "导出、导入或删除向导"
+            documentation: 查看管理器文档
+            none_selected: 请至少选择一个向导
+            no_file: 请选择要导入的文件
+            file_size_error: 文件大小不能超过 512KB
+            file_format_error: 文件必须是 .json 格式
+            importing: 正在导入向导...
+            destroying: 正在删除向导...
+            import_complete: 导入完成
+            destroy_complete: 删除完成
+          subscription:
+            documentation: 查看订阅文档
+            authorize: "连接此论坛以使用您在 %{server} 上的自定义向导订阅计划。"
+            not_subscribed: "您已连接，但当前未在 %{server} 上订阅自定义向导计划。"
+            subscription_expiring: "您的订阅有效，但将在 48 小时内到期。"
+            subscription_active: "您的订阅有效。"
+            subscription_inactive: "您在此论坛上的订阅已失效。请阅读<a href='https://pavilion.tech/products/discourse-custom-wizard-plugin/documentation/'>文档</a>了解更多信息。"
+            unauthorized: "您未连接。如果您有订阅，它将在 48 小时内失效。"
+            unauthorize_failed: 断开连接失败。
+          submissions:
+            select: "选择一个向导以查看其提交记录"
+            viewing: "您正在查看 %{wizardName} 的提交记录"
+            documentation: "查看提交记录文档"
+          logs:
+            select: "选择一个向导以查看其日志"
+            viewing: "查看论坛上向导的最近日志"
+            documentation: "查看日志文档"
+          notices:
+            info: "插件状态和订阅通知"
+            documentation: 查看通知文档
+
+        editor:
+          show: "显示"
+          hide: "隐藏"
+          preview: "{{action}}预览"
+          popover: "{{action}}字段"
+
+        input:
+          conditional:
+            name: "如果"
+            output: "则"
+          assignment:
+            name: "设置"
+          association:
+            name: "映射"
+          validation:
+            name: "确保"
+
+        selector:
+          label:
+            text: "文本"
+            wizard_field: "向导字段"
+            wizard_action: "向导操作"
+            user_field: "用户字段"
+            user_field_options: "用户字段选项"
+            user: "用户"
+            category: "分类"
+            topic: "主题"
+            tag: "标签"
+            group: "群组"
+            list: "列表"
+            custom_field: "自定义字段"
+            value: "值"
+            users: "用户"
+            guests: "用户和访客"
+
+          placeholder:
+            text: "输入文本"
+            property: "选择属性"
+            wizard_field: "选择字段"
+            wizard_action: "选择操作"
+            user_field: "选择字段"
+            user_field_options: "选择字段"
+            user: "选择用户"
+            category: "选择分类"
+            topic: "选择主题"
+            tag: "选择标签"
+            group: "选择群组"
+            list: "输入项目"
+            custom_field: "选择字段"
+            value: "选择值"
+
+        error:
+          failed: "保存向导失败"
+          required: "{{type}}需要 {{property}}"
+          invalid: "{{property}}无效"
+          dependent: "{{property}}依赖于 {{dependent}}"
+          conflict: "{{type}}的 {{property}} '{{value}}' 已存在"
+          after_time: "定时设置无效"
+
+        step:
+          header: "步骤"
+          title: "标题"
+          banner: "横幅"
+          description: "描述"
+          required_data:
+            label: "必需数据"
+            not_permitted_message: "必需数据不存在时显示的消息"
+          permitted_params:
+            label: "允许的参数"
+          force_final:
+            label: "条件性最终步骤"
+            description: "如果后续步骤的条件在用户到达此步骤时未通过，则将此步骤显示为最终步骤。"
+
+        field:
+          header: "字段"
+          label: "标签"
+          description: "描述"
+          image: "图片"
+          image_placeholder: "图片 URL"
+          required: "必填"
+          required_label: "字段为必填"
+          min_length: "最小长度"
+          min_length_placeholder: "最小字符数"
+          max_length: "最大长度"
+          max_length_placeholder: "最大字符数"
+          char_counter: "计数器"
+          char_counter_placeholder: "显示字符计数器"
+          field_placeholder: "占位符"
+          file_types: "文件类型"
+          max_upload_size_kb: "最大上传大小（KB）"
+          max_upload_size_kb_placeholder: "留空则使用站点默认值"
+          max_image_dimension: "最大图片尺寸（px）"
+          max_image_dimension_placeholder: "例如 2048 — 将缩小较大的图片"
+          compress_images: "上传前自动压缩图片"
+          convert_heic: "自动将 HEIC 图片转换为 JPEG"
+          preview_template: "模板"
+          limit: "限制"
+          property: "属性"
+          prefill: "预填"
+          content: "内容"
+          tag_groups: "标签组"
+          can_create_tag: "可以创建标签"
+          category:
+            label: "分类"
+            none: "限定到某个分类..."
+          date_time_format:
+            label: "格式"
+            instructions: "<a href='https://momentjs.com/docs/#/displaying/format/' target='_blank'>Moment.js 格式</a>"
+          validations:
+            header: "验证"
+            enabled: "启用"
+            similar_topics: "相似主题"
+            position: "位置"
+            above: "上方"
+            below: "下方"
+            categories: "分类"
+            max_topic_age: "最大主题年龄"
+            time_units:
+              days: "天"
+              weeks: "周"
+              months: "月"
+              years: "年"
+
+          type:
+            text: "文本"
+            textarea: 多行文本
+            composer: 编辑器
+            composer_preview: 编辑器预览
+            text_only: 纯文本
+            number: 数字
+            checkbox: 复选框
+            url: URL
+            upload: 上传
+            dropdown: 下拉菜单
+            tag: 标签
+            category: 分类
+            topic: 主题
+            group: 群组
+            user_selector: 用户选择器
+            date: 日期
+            time: 时间
+            date_time: 日期和时间
+            event: 事件（Events 插件）
+
+        connector:
+          and: "且"
+          or: "或"
+          then: "则"
+          set: "设置"
+          equal: "="
+          not_equal: "!="
+          greater: ">"
+          less: "<"
+          greater_or_equal: ">="
+          less_or_equal: "<="
+          regex: "=~"
+          association: "→"
+          is: "是"
+
+        action:
+          header: "操作"
+          include: "包含字段"
+          title: "标题"
+          post: "帖子"
+          poster:
+            label: "发帖人"
+            wizard_user: "向导用户"
+          guest_email:
+            label: "访客邮箱"
+            placeholder: "访客邮箱字段"
+          topic_attr: "主题属性"
+          interpolate_fields: "使用 w{field_id} 插入向导字段。使用 u{field key} 插入用户字段。"
+
+          run_after:
+            label: "执行时机"
+            wizard_completion: "向导完成时"
+          custom_fields:
+            label: "自定义"
+            key: "字段"
+          skip_redirect:
+            label: "重定向"
+            description: "向导完成后不要将用户重定向到此 {{type}}"
+          suppress_notifications:
+            label: "抑制通知"
+            description: "抑制因创建帖子而触发的常规通知"
+          send_message:
+            label: "发送消息"
+            recipient: "收件人"
+          create_topic:
+            label: "创建主题"
+            category: "分类"
+            tags: "标签"
+            visible: "可见"
+            add_event: "添加事件（Events 插件）"
+            add_location: "添加位置（Locations 插件）"
+          open_composer:
+            label: "打开编辑器"
+          update_profile:
+            label: "更新个人资料"
+            setting: "字段"
+            key: "字段"
+          watch_categories:
+            label: "关注分类"
+            categories: "分类"
+            mute_remainder: "将其余设为免打扰"
+          watch_tags:
+            label: "关注标签"
+            tags: "标签"
+          watch_x:
+            notification_level:
+              label: "通知级别"
+              regular: "常规"
+              watching: "关注"
+              tracking: "跟踪"
+              watching_first_post: "关注第一个帖子"
+              muted: "免打扰"
+            select_a_notification_level: "选择级别"
+            wizard_user: "向导用户"
+            usernames: "用户"
+          post_builder:
+            checkbox: "帖子构建器"
+            label: "构建器"
+            user_properties: "用户属性"
+            wizard_fields: "向导字段"
+            wizard_actions: "向导操作"
+            placeholder: "使用 w{field_id} 插入向导字段。使用 u{property} 插入用户属性。"
+          add_to_group:
+            label: "添加到群组"
+          route_to:
+            label: "跳转到"
+            url: "URL"
+            code: "代码"
+          send_to_api:
+            label: "发送到 API"
+            api: "API"
+            endpoint: "端点"
+            select_an_api: "选择 API"
+            select_an_endpoint: "选择端点"
+            body: "请求体"
+            body_placeholder: "JSON"
+          create_category:
+            label: "创建分类"
+            name: 名称
+            slug: 别名
+            color: 颜色
+            text_color: 文字颜色
+            parent_category: 父分类
+            permissions: 权限
+          create_group:
+            label: 创建群组
+            name: 名称
+            full_name: 全名
+            title: 头衔
+            bio_raw: 简介
+            owner_usernames: 所有者
+            usernames: 成员
+            grant_trust_level: 自动信任级别
+            mentionable_level: 可提及级别
+            messageable_level: 可发消息级别
+            visibility_level: 可见性级别
+            members_visibility_level: 成员可见性级别
+
+        custom_field:
+          nav_label: "自定义字段"
+          add: "添加"
+          external:
+            label: "来自其他插件"
+            title: "此自定义字段由其他插件添加。您可以在向导中使用它，但无法在此处编辑。"
+          name:
+            label: "名称"
+            select: "underscored_name"
+          type:
+            label: "类型"
+            select: "选择类型"
+            string: "字符串"
+            integer: "整数"
+            boolean: "布尔值"
+            json: "JSON"
+          klass:
+            label: "类"
+            select: "选择类"
+            post: "帖子"
+            category: "分类"
+            topic: "主题"
+            group: "群组"
+            user: "用户"
+          serializers:
+            label: "序列化器"
+            select: "选择序列化器"
+            topic_view: "主题视图"
+            topic_list_item: "主题列表项"
+            basic_category: "分类"
+            basic_group: "群组"
+            post: "帖子"
+
+        submissions:
+          nav_label: "提交记录"
+          title: "{{name}} 的提交记录"
+          download: "下载"
+          group_id: "群组 ID"
+          category_id: "分类 ID"
+          topic_id: "主题 ID"
+          composer_preview: "编辑器预览"
+
+        api:
+          label: "API"
+          nav_label: "API"
+          select: "选择 API"
+          create: "创建 API"
+          new: "新建 API"
+          name: "名称（不可更改）"
+          name_placeholder: "下划线命名"
+          title: "标题"
+          title_placeholder: "显示名称"
+          remove: "删除"
+          save: "保存"
+
+          auth:
+            label: "授权"
+            btn: "授权"
+            settings: "设置"
+            status: "状态"
+            redirect_uri: "重定向 URL"
+            type: "类型"
+            type_none: "选择类型"
+            url: "授权 URL"
+            token_url: "令牌 URL"
+            client_id: "客户端 ID"
+            client_secret: "客户端密钥"
+            username: "用户名"
+            password: "密码"
+            params:
+              label: "参数"
+              new: "新建参数"
+
+          status:
+            label: "状态"
+            authorized: "已授权"
+            not_authorized: "未授权"
+            code: "代码"
+            access_token: "访问令牌"
+            refresh_token: "刷新令牌"
+            expires_at: "过期时间"
+            refresh_at: "刷新时间"
+
+          endpoint:
+            label: "端点"
+            add: "添加端点"
+            name: "端点名称"
+            method: "选择方法"
+            url: "输入 URL"
+            content_type: "选择内容类型"
+            success_codes: "选择成功状态码"
+
+          log:
+            label: "日志"
+            clear: 清除
+
+        log:
+          nav_label: "日志"
+          title: "{{name}} 的日志"
+          date: 日期
+          action: 操作
+          user: 用户
+          message: 消息
+
+        manager:
+          nav_label: 管理器
+          title: 管理向导
+          export: 导出
+          import: 导入
+          imported: 已导入
+          upload: 选择 wizards.json
+          destroy: 删除
+          destroyed: 已删除
+
+        subscription:
+          title: 订阅者功能
+          authorize:
+            label: 连接
+            title: 将您的订阅连接到此站点
+          deauthorize:
+            label: 断开连接
+            title: 从此站点断开您的订阅
+          update:
+            title: "更新订阅状态"
+          subscribed:
+            label: 已订阅
+            title: 您已订阅，可以使用这些功能
+            selector: 已订阅
+          not_subscribed:
+            label: 未订阅
+            title: 订阅以使用这些功能
+            selector: 未订阅
+          type:
+            none:
+              label: 订阅
+              title: 此论坛上没有激活的自定义向导订阅。
+            business:
+              label: 支持
+              title: 此论坛上有一个自定义向导商业版订阅。
+            standard:
+              label: 支持
+              title: 此论坛上有一个自定义向导标准版订阅。
+            community:
+              label: 支持
+              title: 此论坛上有一个自定义向导社区版订阅。
+        user:
+          label: 向导
+          redirect:
+            label: 重定向
+            remove_label: 移除
+            remove_title: 移除向导重定向
+
+  wizard_js:
+    group:
+      select: "选择群组"
+
+    location:
+      name:
+        title: "名称（可选）"
+        desc: "例如 P. Sherman 牙医诊所"
+      street:
+        title: "门牌号和街道"
+        desc: "例如 42 Wallaby Way"
+      postalcode:
+        title: "邮政编码"
+        desc: "例如 200000"
+      neighbourhood:
+        title: "街区"
+        desc: "例如 静安寺"
+      city:
+        title: "城市、城镇或村庄"
+        desc: "例如 上海"
+      coordinates: "坐标"
+      lat:
+        title: "纬度"
+        desc: "例如 -31.9456702"
+      lon:
+        title: "经度"
+        desc: "例如 115.8626477"
+      country_code:
+        title: "国家"
+        placeholder: "选择国家"
+      query:
+        title: "地址"
+        desc: "例如 42 Wallaby Way, Sydney."
+      geo:
+        desc: "位置信息由 {{provider}} 提供"
+        btn:
+          label: "查找位置"
+        results: "位置结果"
+        no_results: "没有结果。请仔细检查拼写。"
+        show_map: "显示地图"
+      validation:
+        neighbourhood: "请输入街区。"
+        city: "请输入城市、城镇或村庄。"
+        street: "请输入门牌号和街道。"
+        postalcode: "请输入邮政编码。"
+        countrycode: "请选择国家。"
+        coordinates: "请填写完整的坐标。"
+        geo_location: "搜索并选择一个结果。"
