@@ -1,0 +1,72 @@
+zh_CN:
+  admin:
+    wizard:
+      submission:
+        no_user: "已删除（user_id：%{user_id}）"
+
+  wizard:
+    custom_title: "向导"
+
+    custom_field:
+      error:
+        required_attribute: "'%{attr}'是必需的属性"
+        unsupported_class: "'%{class}'不是受支持的类"
+        unsupported_serializers: "'%{serializers}'不是'%{class}'的受支持序列化器"
+        unsupported_type: "%{type}不是受支持的自定义字段类型"
+        name_invalid: "'%{name}'不是有效的自定义字段名称"
+        name_too_short: "'%{name}'作为自定义字段名称太短（最小长度为 #{min_length}）"
+        name_already_taken: "'%{name}'已被用作自定义字段名称"
+        save_default: "保存自定义字段\u201C%{name}\u201D失败"
+        subscription_type: "%{type} 自定义字段需要订阅"
+
+    field:
+      too_short: "%{label}至少需要 %{min} 个字符"
+      too_long: "%{label}不能超过 %{max} 个字符"
+      required: "%{label}为必填项。"
+      not_url: "%{label}必须是有效的 URL"
+      invalid_file: "%{label}必须是 %{types} 格式"
+      file_too_large: "%{label}不能超过 %{max_kb} KB"
+      invalid_date: "无效的日期"
+      invalid_time: "无效的时间"
+
+    none: "我们未能在该地址找到向导。"
+    no_skip: "向导不能被跳过"
+    export:
+      error:
+        select_one: "请选择至少一个有效向导"
+        invalid_wizards: "未选择有效的向导"
+
+    import:
+      error:
+        no_file: "未选中任何文件"
+        file_large: "文件过大"
+        invalid_json: "文件不是一个有效的 json 文件"
+
+    destroy:
+      error:
+        no_template: 没有找到模板
+        default: 销毁向导时出错
+
+    validation:
+      required: "%{property}为必填项"
+      conflict: "Id 为'%{wizard_id}'的向导已存在"
+      after_signup: "您只能有一个\u201C注册后导向\u201D型的向导。%{wizard_id} 已启用\u201C注册后导向\u201D。"
+      after_signup_after_time: "您不能在同一向导上同时使用\u201C定时\u201D和\u201C注册后导向\u201D。"
+      after_time: "定时设置无效。"
+      after_time_group: "定时群组不存在：%{group_name}"
+      delay_approval_requires_after_signup: "延迟审批功能需要启用\u201C注册后导向\u201D"
+      liquid_syntax_error: "%{attribute} 中存在 Liquid 语法错误：%{message}"
+      subscription: "%{type} %{property} 的使用在您的订阅中不受支持"
+      not_permitted_for_guests: "当访客可以访问向导时，不允许使用 %{object_id}"
+    error_messages:
+      wizard_replacing_composer: "该分类不允许创建主题。"
+    delayed_approval:
+      cannot_skip: "在您的账户等待审批期间，不能跳过此向导。"
+
+  site_settings:
+    custom_wizard_enabled: "启用自定义向导。"
+    wizard_redirect_exclude_paths: "从向导重定向中排除的路由。"
+    wizard_recognised_image_upload_formats: "将在上传时显示图片预览的文件类型"
+    wizard_max_upload_size_kb: "向导上传字段的默认最大大小（KB）。各上传字段可单独覆盖此设置。"
+    wizard_apis_enabled: "启用 API 功能（实验性）。"
+    wizard_critical_notices_on_dashboard: "在管理面板上显示自定义向导插件的重要通知。"
