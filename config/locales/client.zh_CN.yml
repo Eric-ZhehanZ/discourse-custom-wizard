@@ -16,6 +16,9 @@ zh_CN:
           wizard_label: "向导："
           actions_heading: "待执行动作"
           fields_heading: "提交字段"
+          column_field: "字段"
+          column_value: "提交值"
+          admin_link: "管理"
           unnamed_wizard: "（未命名的向导）"
     wizard:
       complete_custom: "完成 {{name}}"

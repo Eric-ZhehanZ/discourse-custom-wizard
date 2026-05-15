@@ -917,3 +917,46 @@ $error: #ef1700;
     }
   }
 }
+
+.custom-wizard-submission-review {
+  .wizard-name {
+    margin: 0 0 10px;
+    font-size: 16px;
+    a { text-decoration: underline; }
+  }
+
+  .wizard-submission-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--primary-low);
+    margin-bottom: 12px;
+
+    .avatar img { border-radius: 50%; }
+    .user-details { line-height: 1.4; }
+    .user-line.username a { font-weight: 600; }
+    .user-line.email { color: var(--primary-medium); font-size: 12px; }
+  }
+
+  h4 { margin: 12px 0 6px; font-size: 13px; text-transform: uppercase; color: var(--primary-medium); }
+
+  .action-list { padding-left: 18px; margin: 0 0 12px; }
+  .action-list li { margin: 2px 0; }
+
+  .wizard-submission-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 12px;
+
+    th, td {
+      padding: 6px 10px;
+      border: 1px solid var(--primary-low);
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: var(--primary-very-low); font-weight: 600; }
+    td.field-label { width: 30%; color: var(--primary-medium); }
+    td.field-value { white-space: pre-wrap; word-break: break-word; }
+  }
+}

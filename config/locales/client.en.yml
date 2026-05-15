@@ -16,6 +16,9 @@ en:
           wizard_label: "Wizard:"
           actions_heading: "Pending actions"
           fields_heading: "Submitted fields"
+          column_field: "Field"
+          column_value: "Submitted value"
+          admin_link: "admin"
           unnamed_wizard: "(unnamed wizard)"
     wizard:
       complete_custom: "Complete the {{name}}"

@@ -1,54 +1,44 @@
 import Component from "@glimmer/component";
+import avatar from "discourse/helpers/avatar";
 import { i18n } from "discourse-i18n";
+
+// Returns the i18n string for `key` if present, otherwise `fallback`.
+function maybeI18n(key, fallback) {
+  const value = i18n(key);
+  return value === key ? fallback : value;
+}
 
 export default class ReviewableCustomWizardSubmission extends Component {
   get wizardName() {
     return (
       this.args.reviewable?.wizard_name ||
-      this.args.reviewable?.payload?.wizard_name ||
       this.args.reviewable?.wizard_id ||
       i18n("admin.wizard.review.unnamed_wizard")
     );
   }
 
   get wizardUrl() {
-    const id = this.args.reviewable?.wizard_id || this.args.reviewable?.payload?.wizard_id;
+    const id = this.args.reviewable?.wizard_id;
     return id ? `/w/${id}` : null;
   }
 
-  get actions() {
-    return this.args.reviewable?.payload?.actions || [];
+  get user() {
+    return this.args.reviewable?.submission_user;
   }
 
   get fields() {
-    const f = this.args.reviewable?.payload?.submission_fields || {};
-    // Hide internal meta keys: route_to, redirect_*, submitted_at, ...
-    const skip = new Set([
-      "id",
-      "route_to",
-      "redirect_on_complete",
-      "redirect_to",
-      "submitted_at",
-      "updated_at",
-      "permitted_param_keys",
-    ]);
-    return Object.entries(f)
-      .filter(([k]) => !skip.has(k))
-      .map(([k, v]) => ({ key: k, value: this.#stringify(v) }));
+    return this.args.reviewable?.enriched_fields || [];
   }
 
-  #stringify(value) {
-    if (value == null) {
-      return "";
-    }
-    if (typeof value === "object") {
-      try {
-        return JSON.stringify(value);
-      } catch {
-        return String(value);
-      }
-    }
-    return String(value);
+  get actions() {
+    return (this.args.reviewable?.enriched_actions || []).map((a) => {
+      const type = a.type || "";
+      const label =
+        a.label ||
+        maybeI18n(`admin.wizard.action.${type}.label`, type) ||
+        type;
+      return { id: a.id, type, label };
+    });
   }
 
   <template>
@@ -56,23 +46,57 @@ export default class ReviewableCustomWizardSubmission extends Component {
       <h3 class="wizard-name">
         {{i18n "admin.wizard.review.wizard_label"}}
         {{#if this.wizardUrl}}
-          <a href={{this.wizardUrl}} target="_blank" rel="noopener">{{this.wizardName}}</a>
+          <a
+            href={{this.wizardUrl}}
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{this.wizardName}}</a>
         {{else}}
           {{this.wizardName}}
         {{/if}}
       </h3>
 
+      {{#if this.user}}
+        <div class="wizard-submission-user">
+          <a
+            class="avatar"
+            href={{this.user.profile_url}}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{avatar this.user imageSize="medium"}}
+          </a>
+          <div class="user-details">
+            <div class="user-line username">
+              <a
+                href={{this.user.profile_url}}
+                target="_blank"
+                rel="noopener noreferrer"
+              >@{{this.user.username}}</a>
+              {{#if this.user.admin_url}}
+                · <a
+                  href={{this.user.admin_url}}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >{{i18n "admin.wizard.review.admin_link"}}</a>
+              {{/if}}
+            </div>
+            {{#if this.user.name}}
+              <div class="user-line name">{{this.user.name}}</div>
+            {{/if}}
+            {{#if this.user.email}}
+              <div class="user-line email">{{this.user.email}}</div>
+            {{/if}}
+          </div>
+        </div>
+      {{/if}}
+
       {{#if this.actions.length}}
         <div class="wizard-pending-actions">
           <h4>{{i18n "admin.wizard.review.actions_heading"}}</h4>
-          <ul>
+          <ul class="action-list">
             {{#each this.actions as |action|}}
-              <li>
-                <strong>{{action.type}}</strong>
-                {{#if action.id}}
-                  <code class="action-id">{{action.id}}</code>
-                {{/if}}
-              </li>
+              <li>{{action.label}}</li>
             {{/each}}
           </ul>
         </div>
@@ -81,12 +105,22 @@ export default class ReviewableCustomWizardSubmission extends Component {
       {{#if this.fields.length}}
         <div class="wizard-submission-fields">
           <h4>{{i18n "admin.wizard.review.fields_heading"}}</h4>
-          <dl>
-            {{#each this.fields as |field|}}
-              <dt>{{field.key}}</dt>
-              <dd>{{field.value}}</dd>
-            {{/each}}
-          </dl>
+          <table class="wizard-submission-table">
+            <thead>
+              <tr>
+                <th>{{i18n "admin.wizard.review.column_field"}}</th>
+                <th>{{i18n "admin.wizard.review.column_value"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.fields as |field|}}
+                <tr>
+                  <td class="field-label">{{field.label}}</td>
+                  <td class="field-value">{{field.value}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
         </div>
       {{/if}}
     </div>
