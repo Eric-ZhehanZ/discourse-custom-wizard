@@ -10,6 +10,13 @@ en:
           description: "Reject this wizard submission. The user is notified and asked to resubmit."
       reasons:
         custom_wizard_submission: "Pending wizard submission"
+    admin:
+      wizard:
+        review:
+          wizard_label: "Wizard:"
+          actions_heading: "Pending actions"
+          fields_heading: "Submitted fields"
+          unnamed_wizard: "(unnamed wizard)"
     wizard:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."

@@ -143,6 +143,15 @@ class CustomWizard::Wizard
 
       step.last_step = true if index === (all_step_ids.length - 1)
 
+      # Mirror the same fix StepsController#update applies on submission so
+      # the serialized step has `final: true` when it is the user's last
+      # visible step (no remaining navigable steps), even if conditions
+      # hid the absolutely-final step. Without this, the wizard renders
+      # the green "Submit" button as a grey "Next" arrow.
+      if step.conditional_final_step && !step.last_step
+        step.force_final = true
+      end
+
       if !@restart_on_revisit && step.previous && step.previous.id === last_completed_step_id
         @start = step.id
       end

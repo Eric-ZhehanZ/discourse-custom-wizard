@@ -10,6 +10,13 @@ zh_CN:
           description: "拒绝此向导提交。系统会通知用户并提示其重新提交。"
       reasons:
         custom_wizard_submission: "待审核的向导提交"
+    admin:
+      wizard:
+        review:
+          wizard_label: "向导："
+          actions_heading: "待执行动作"
+          fields_heading: "提交字段"
+          unnamed_wizard: "（未命名的向导）"
     wizard:
       complete_custom: "完成 {{name}}"
       completed: "您已完成此向导。"
