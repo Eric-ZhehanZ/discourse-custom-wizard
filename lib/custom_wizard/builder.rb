@@ -153,23 +153,29 @@ class CustomWizard::Builder
 
     params[:category] = field_template["category"] if field_template["type"] === "topic"
 
-    if (content_inputs = field_template["content"]).present?
-      content =
-        CustomWizard::Mapper.new(
-          inputs: content_inputs,
-          user: @wizard.user,
-          data: @wizard.current_submission&.fields_and_meta,
-          opts: {
-            with_type: true,
-          },
-        ).perform
+    case field_template["content_source"].to_s
+    when "text", "remote"
+      bulk = CustomWizard::ContentSource.build(field_template)
+      params[:content] = bulk if bulk.present?
+    else
+      if (content_inputs = field_template["content"]).present?
+        content =
+          CustomWizard::Mapper.new(
+            inputs: content_inputs,
+            user: @wizard.user,
+            data: @wizard.current_submission&.fields_and_meta,
+            opts: {
+              with_type: true,
+            },
+          ).perform
 
-      if content.present? && content[:result].present?
-        if content[:type] == "association"
-          content[:result] = content[:result].map { |item| { id: item[:key], name: item[:value] } }
+        if content.present? && content[:result].present?
+          if content[:type] == "association"
+            content[:result] = content[:result].map { |item| { id: item[:key], name: item[:value] } }
+          end
+
+          params[:content] = content[:result]
         end
-
-        params[:content] = content[:result]
       end
     end
 

@@ -51,6 +51,7 @@ after_initialize do
   require_relative "lib/custom_wizard/validators/update.rb"
   require_relative "lib/custom_wizard/action_result.rb"
   require_relative "lib/custom_wizard/action.rb"
+  require_relative "lib/custom_wizard/content_source.rb"
   require_relative "lib/custom_wizard/builder.rb"
   require_relative "lib/custom_wizard/cache.rb"
   require_relative "lib/custom_wizard/custom_field.rb"

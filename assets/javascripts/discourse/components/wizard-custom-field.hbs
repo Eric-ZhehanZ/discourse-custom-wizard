@@ -255,20 +255,92 @@
 {{/if}}
 
 {{#if this.showContent}}
-  <div class="setting full field-mapper-setting">
+  <div class="setting full">
     <div class="setting-label">
-      <label>{{i18n "admin.wizard.field.content"}}</label>
+      <label>{{i18n "admin.wizard.field.content_source"}}</label>
     </div>
-
     <div class="setting-value">
-      {{wizard-mapper
-        inputs=this.field.content
-        property="content"
-        onUpdate=(action "mappedFieldUpdated")
-        options=this.contentOptions
+      {{combo-box
+        value=this.field.content_source
+        content=this.contentSourceTypes
+        onChange=(action "contentSourceChanged")
       }}
+      <label class="instructions">
+        {{i18n "admin.wizard.field.content_source_instructions"}}
+      </label>
     </div>
   </div>
+
+  {{#if this.contentSourceIsMapper}}
+    <div class="setting full field-mapper-setting">
+      <div class="setting-label">
+        <label>{{i18n "admin.wizard.field.content"}}</label>
+      </div>
+
+      <div class="setting-value">
+        {{wizard-mapper
+          inputs=this.field.content
+          property="content"
+          onUpdate=(action "mappedFieldUpdated")
+          options=this.contentOptions
+        }}
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if this.contentSourceIsText}}
+    <div class="setting full">
+      <div class="setting-label">
+        <label>{{i18n "admin.wizard.field.content_text"}}</label>
+      </div>
+      <div class="setting-value">
+        <Textarea
+          @value={{this.field.content_text}}
+          rows="10"
+          class="wizard-content-text"
+          placeholder={{i18n "admin.wizard.field.content_text_placeholder"}}
+        />
+        <label class="instructions">
+          {{i18n "admin.wizard.field.content_text_instructions"}}
+        </label>
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if this.contentSourceIsRemote}}
+    <div class="setting full">
+      <div class="setting-label">
+        <label>{{i18n "admin.wizard.field.content_url"}}</label>
+      </div>
+      <div class="setting-value">
+        <Input
+          @value={{this.field.content_url}}
+          placeholder="https://example.com/options.txt"
+        />
+        <label class="instructions">
+          {{i18n "admin.wizard.field.content_url_instructions"}}
+        </label>
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if this.contentSourceIsBulk}}
+    <div class="setting">
+      <div class="setting-label">
+        <label>{{i18n "admin.wizard.field.content_separator"}}</label>
+      </div>
+      <div class="setting-value">
+        <Input
+          @value={{this.field.content_separator}}
+          class="short-input"
+          placeholder="|"
+        />
+        <label class="instructions">
+          {{i18n "admin.wizard.field.content_separator_instructions"}}
+        </label>
+      </div>
+    </div>
+  {{/if}}
 {{/if}}
 
 {{#if this.isTag}}

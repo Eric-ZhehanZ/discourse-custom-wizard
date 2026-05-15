@@ -1,10 +1,13 @@
 import Component from "@ember/component";
 import { computed } from "@ember/object";
 import { equal, or } from "@ember/object/computed";
+import I18n from "I18n";
 import { default as discourseComputed } from "discourse-common/utils/decorators";
 import { selectKitContent } from "../lib/wizard";
 import wizardSchema from "../lib/wizard-schema";
 import UndoChanges from "../mixins/undo-changes";
+
+const CONTENT_SOURCE_TYPES = ["mapper", "text", "remote"];
 
 export default Component.extend(UndoChanges, {
   componentType: "field",
@@ -31,6 +34,19 @@ export default Component.extend(UndoChanges, {
     "isTopic"
   ),
   showContent: or("isCategory", "isTag", "isGroup", "isDropdown", "isTopic"),
+  contentSourceIsMapper: computed("field.content_source", function () {
+    const v = this.field.content_source;
+    return !v || v === "mapper";
+  }),
+  contentSourceIsText: equal("field.content_source", "text"),
+  contentSourceIsRemote: equal("field.content_source", "remote"),
+  contentSourceIsBulk: or("contentSourceIsText", "contentSourceIsRemote"),
+  contentSourceTypes: computed(function () {
+    return CONTENT_SOURCE_TYPES.map((id) => ({
+      id,
+      name: I18n.t(`admin.wizard.field.content_source_types.${id}`),
+    }));
+  }),
   showLimit: or("isCategory", "isTag", "isTopic"),
   isTextType: or("isText", "isTextarea", "isComposer"),
   isComposerPreview: equal("field.type", "composer_preview"),
@@ -167,6 +183,10 @@ export default Component.extend(UndoChanges, {
 
     changeCategory(category) {
       this.set("field.category", category?.id);
+    },
+
+    contentSourceChanged(value) {
+      this.set("field.content_source", value);
     },
   },
 });
