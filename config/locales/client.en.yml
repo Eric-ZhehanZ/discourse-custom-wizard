@@ -1,5 +1,15 @@
 en:
   js:
+    reviewables:
+      actions:
+        approve_wizard_action:
+          title: "Approve"
+          description: "Approve and run this pending wizard action."
+        reject_wizard_action:
+          title: "Reject"
+          description: "Discard this pending wizard action; nothing changes on the user."
+      reasons:
+        custom_wizard_action: "Pending wizard action"
     wizard:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."
@@ -385,6 +395,9 @@ en:
           run_after:
             label: "Run After"
             wizard_completion: "Wizard Completion"
+          requires_review:
+            label: "Requires moderator review"
+            instructions: "If checked, this action does not run on submission. A reviewable is queued and the action only executes when a staff member approves it. The user keeps their current profile until then."
           custom_fields:
             label: "Custom"
             key: "field"

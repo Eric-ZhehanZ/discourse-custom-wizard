@@ -135,6 +135,7 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
         :id,
         :run_after,
         :type,
+        :requires_review,
         :code,
         :skip_redirect,
         :suppress_notifications,

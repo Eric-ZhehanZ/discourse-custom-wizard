@@ -89,6 +89,7 @@ const action = {
     id: null,
     run_after: "wizard_completion",
     type: null,
+    requires_review: null,
   },
   types: {
     create_topic: {

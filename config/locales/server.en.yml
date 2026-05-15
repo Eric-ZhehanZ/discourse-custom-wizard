@@ -4,6 +4,15 @@ en:
       submission:
         no_user: "deleted (user_id: %{user_id})"
 
+  reviewables:
+    actions:
+      approve_wizard_action:
+        title: "Approve"
+        description: "Approve and run this pending wizard action."
+      reject_wizard_action:
+        title: "Reject"
+        description: "Discard this pending wizard action; nothing changes on the user."
+
   wizard:
     custom_title: "Wizard"
 

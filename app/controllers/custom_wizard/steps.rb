@@ -35,6 +35,15 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       if current_step.final?
         builder.template.actions.each do |action_template|
           if action_template["run_after"] === "wizard_completion"
+            if action_template["requires_review"]
+              CustomWizard::PendingAction.enqueue(
+                action_template: action_template,
+                wizard: @wizard,
+                submission: current_submission,
+              )
+              next
+            end
+
             action_result =
               CustomWizard::Action.new(
                 action: action_template,
