@@ -54,6 +54,14 @@ class CustomWizard::Wizard
     @name = attrs["name"]
     @background = attrs["background"]
     @save_submissions = cast_bool(attrs["save_submissions"])
+    # Force submission persistence whenever the wizard has any
+    # `requires_review` action: the reviewable replays the action from
+    # a snapshot of the submission fields, so fields submitted on
+    # earlier steps must survive between step requests even if the
+    # admin didn't opt in to save_submissions.
+    if !@save_submissions && Array(attrs["actions"]).any? { |a| a.is_a?(Hash) && a["requires_review"] }
+      @save_submissions = true
+    end
     @multiple_submissions = cast_bool(attrs["multiple_submissions"])
     @prompt_completion = cast_bool(attrs["prompt_completion"])
     @restart_on_revisit = cast_bool(attrs["restart_on_revisit"])

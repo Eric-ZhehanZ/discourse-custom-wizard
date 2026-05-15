@@ -73,8 +73,15 @@ class ReviewableCustomWizardSubmission < Reviewable
     submission = CustomWizard::Submission.new(wizard, submission_fields)
 
     actions_payload.each do |action_template|
+      # JSON round-tripping flattens HashWithIndifferentAccess back to a
+      # plain Hash with string keys, but CustomWizard::Action mixes
+      # symbol and string lookups (e.g. profile_updates.first[:pairs]).
+      # Re-wrap so both forms keep working, matching what
+      # CustomWizard::Template#normalize_data does for live submissions.
+      indifferent = action_template.is_a?(Hash) ? action_template.with_indifferent_access : action_template
+
       CustomWizard::Action.new(
-        action: action_template,
+        action: indifferent,
         wizard: wizard,
         submission: submission,
       ).perform
@@ -84,23 +91,25 @@ class ReviewableCustomWizardSubmission < Reviewable
   def mark_user_approved!
     return unless review_user
 
-    review_user.custom_fields["wizard_approved_#{wizard_id}"] = true
-    review_user.custom_fields["wizard_review_state_#{wizard_id}"] = "approved"
-    # If the user was being held / redirected to this wizard, release them.
-    if review_user.custom_fields["redirect_to_wizard"].to_s == wizard_id.to_s
-      review_user.custom_fields.delete("redirect_to_wizard")
+    # Use a fresh User instance so any validation errors accumulated on
+    # `review_user` during action replay don't trip save_custom_fields.
+    fresh = User.find(review_user.id)
+    fresh.custom_fields["wizard_approved_#{wizard_id}"] = true
+    fresh.custom_fields["wizard_review_state_#{wizard_id}"] = "approved"
+    if fresh.custom_fields["redirect_to_wizard"].to_s == wizard_id.to_s
+      fresh.custom_fields.delete("redirect_to_wizard")
     end
-    review_user.save_custom_fields
+    fresh.save_custom_fields
   end
 
   def mark_user_denied!
     return unless review_user
 
-    review_user.custom_fields["wizard_review_state_#{wizard_id}"] = "denied"
-    review_user.custom_fields.delete("wizard_approved_#{wizard_id}")
-    # Force the user back through the wizard before regaining access.
-    review_user.custom_fields["redirect_to_wizard"] = wizard_id
-    review_user.save_custom_fields
+    fresh = User.find(review_user.id)
+    fresh.custom_fields["wizard_review_state_#{wizard_id}"] = "denied"
+    fresh.custom_fields.delete("wizard_approved_#{wizard_id}")
+    fresh.custom_fields["redirect_to_wizard"] = wizard_id
+    fresh.save_custom_fields
   end
 
   def notify_user(state:, performer:, reason: nil)
