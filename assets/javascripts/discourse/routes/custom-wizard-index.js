@@ -7,7 +7,17 @@ export default Route.extend({
 
   beforeModel() {
     const wizard = getCachedWizard();
-    if (wizard && wizard.permitted && !wizard.completed && wizard.start) {
+    const onHold =
+      wizard &&
+      wizard.pending_review &&
+      !wizard.previously_approved;
+    if (
+      wizard &&
+      wizard.permitted &&
+      !wizard.completed &&
+      !onHold &&
+      wizard.start
+    ) {
       this.router.replaceWith("customWizardStep", wizard.start);
     }
   },
@@ -25,6 +35,8 @@ export default Route.extend({
       const name = model.get("name");
       const requiresLogin = !user && !permitted;
       const notPermitted = !permitted;
+      const pendingReview =
+        !!model.get("pending_review") && !model.get("previously_approved");
 
       const props = {
         requiresLogin,
@@ -33,6 +45,7 @@ export default Route.extend({
         completed,
         notPermitted,
         wizardId,
+        pendingReview,
       };
       controller.setProperties(props);
     } else {

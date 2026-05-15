@@ -10,6 +10,7 @@ const wizard = {
     multiple_submissions: null,
     after_signup: null,
     delay_approval_until_finish: null,
+    restrict_to_approved: null,
     after_time: null,
     after_time_scheduled: null,
     required: null,

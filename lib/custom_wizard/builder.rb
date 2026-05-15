@@ -339,14 +339,9 @@ class CustomWizard::Builder
     if @template.actions.present?
       @template.actions.each do |action_template|
         if action_template["run_after"] === updater.step.id
-          if action_template["requires_review"]
-            CustomWizard::PendingAction.enqueue(
-              action_template: action_template,
-              wizard: @wizard,
-              submission: @submission,
-            )
-            next
-          end
+          # Actions flagged for review are deferred to wizard_completion
+          # so the whole submission becomes one reviewable.
+          next if action_template["requires_review"]
 
           result =
             CustomWizard::Action.new(

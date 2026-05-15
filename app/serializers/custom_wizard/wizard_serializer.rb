@@ -8,7 +8,9 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
              :completed,
              :required,
              :permitted,
-             :resume_on_revisit
+             :resume_on_revisit,
+             :pending_review,
+             :previously_approved
 
   has_many :steps, serializer: ::CustomWizard::StepSerializer, embed: :objects
   has_one :user, serializer: ::BasicUserSerializer, embed: :objects
@@ -41,5 +43,13 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
 
   def include_steps?
     !include_completed?
+  end
+
+  def pending_review
+    object.user&.custom_fields&.[]("wizard_review_state_#{object.id}") == "pending"
+  end
+
+  def previously_approved
+    !!object.user&.custom_fields&.[]("wizard_approved_#{object.id}")
   end
 end

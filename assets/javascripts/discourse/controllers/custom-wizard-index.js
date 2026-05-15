@@ -6,11 +6,18 @@ const reasons = {
   noWizard: "none",
   requiresLogin: "requires_login",
   notPermitted: "not_permitted",
+  pendingReview: "pending_review",
   completed: "completed",
 };
 
 export default Controller.extend({
-  noAccess: or("noWizard", "requiresLogin", "notPermitted", "completed"),
+  noAccess: or(
+    "noWizard",
+    "requiresLogin",
+    "notPermitted",
+    "pendingReview",
+    "completed"
+  ),
 
   @discourseComputed("noAccessReason")
   noAccessI18nKey(reason) {

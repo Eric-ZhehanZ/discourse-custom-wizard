@@ -6,12 +6,38 @@ en:
 
   reviewables:
     actions:
-      approve_wizard_action:
+      approve_wizard_submission:
         title: "Approve"
-        description: "Approve and run this pending wizard action."
-      reject_wizard_action:
+        description: "Approve this wizard submission — its flagged actions run on the user."
+      reject_wizard_submission:
         title: "Reject"
-        description: "Discard this pending wizard action; nothing changes on the user."
+        description: "Reject this wizard submission. The user is notified and asked to resubmit."
+
+  system_messages:
+    custom_wizard_review_approved:
+      title: "Your submission has been approved"
+      subject_template: "Your %{wizard_name} submission has been approved"
+      text_body_template: |
+        Hi %{username},
+
+        Your submission for **%{wizard_name}** has been approved by **%{reviewer}**.
+
+        Your account now reflects the submitted information and full access has been restored.
+
+        Thanks!
+    custom_wizard_review_denied:
+      title: "Your submission needs changes"
+      subject_template: "Your %{wizard_name} submission needs changes"
+      no_reason: "(no reason was given)"
+      text_body_template: |
+        Hi %{username},
+
+        Your submission for **%{wizard_name}** was not approved.
+
+        Reviewer: **%{reviewer}**
+        Reason: %{reason}
+
+        Please [resubmit the form](%{wizard_url}) to continue.
 
   wizard:
     custom_title: "Wizard"

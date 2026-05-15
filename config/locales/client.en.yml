@@ -2,17 +2,18 @@ en:
   js:
     reviewables:
       actions:
-        approve_wizard_action:
+        approve_wizard_submission:
           title: "Approve"
-          description: "Approve and run this pending wizard action."
-        reject_wizard_action:
+          description: "Approve this wizard submission — its flagged actions run on the user."
+        reject_wizard_submission:
           title: "Reject"
-          description: "Discard this pending wizard action; nothing changes on the user."
+          description: "Reject this wizard submission. The user is notified and asked to resubmit."
       reasons:
-        custom_wizard_action: "Pending wizard action"
+        custom_wizard_submission: "Pending wizard submission"
     wizard:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."
+      pending_review: "Your submission is pending moderator review. You'll receive a system message and an email when a decision is made. Until then, please wait here."
       not_permitted: "You are not permitted to access this wizard."
       none: "There is no wizard here."
       return_to_site: "Return to {{siteName}}."
@@ -105,6 +106,8 @@ en:
         after_signup_label: "Users directed to wizard after signup."
         delay_approval_until_finish: "Delay Approval"
         delay_approval_until_finish_label: 'Send users back to the admin review queue after they finish the wizard. Forces the wizard to be required (skip is disabled) and logs users out on completion. Requires "Signup" to be enabled.'
+        restrict_to_approved: "Gate access on review"
+        restrict_to_approved_label: "Users who have never had an approved submission for this wizard are held (auto-redirected to the wizard) until a moderator approves their submission. Denied submissions also redirect back to the wizard. Users who were previously approved keep access while a new submission is pending."
         after_time: "Time"
         after_time_label: "Users directed to wizard after start time:"
         after_time_time_label: "Start Time"

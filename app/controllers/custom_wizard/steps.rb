@@ -33,17 +33,15 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       end
 
       if current_step.final?
-        builder.template.actions.each do |action_template|
-          if action_template["run_after"] === "wizard_completion"
-            if action_template["requires_review"]
-              CustomWizard::PendingAction.enqueue(
-                action_template: action_template,
-                wizard: @wizard,
-                submission: current_submission,
-              )
-              next
-            end
+        flagged_actions = []
 
+        builder.template.actions.each do |action_template|
+          if action_template["requires_review"]
+            flagged_actions << action_template
+            next
+          end
+
+          if action_template["run_after"] === "wizard_completion"
             action_result =
               CustomWizard::Action.new(
                 action: action_template,
@@ -53,6 +51,14 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
 
             current_submission = action_result.submission if action_result.success?
           end
+        end
+
+        if flagged_actions.any?
+          CustomWizard::PendingSubmission.enqueue(
+            actions: flagged_actions,
+            wizard: @wizard,
+            submission: current_submission,
+          )
         end
 
         current_submission.save

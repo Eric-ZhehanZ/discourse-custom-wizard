@@ -52,9 +52,9 @@ after_initialize do
   require_relative "lib/custom_wizard/action_result.rb"
   require_relative "lib/custom_wizard/action.rb"
   require_relative "lib/custom_wizard/content_source.rb"
-  require_relative "lib/custom_wizard/pending_action.rb"
-  require_relative "app/models/reviewable_custom_wizard_action.rb"
-  require_relative "app/serializers/reviewable_custom_wizard_action_serializer.rb"
+  require_relative "lib/custom_wizard/pending_submission.rb"
+  require_relative "app/models/reviewable_custom_wizard_submission.rb"
+  require_relative "app/serializers/reviewable_custom_wizard_submission_serializer.rb"
   require_relative "lib/custom_wizard/builder.rb"
   require_relative "lib/custom_wizard/cache.rb"
   require_relative "lib/custom_wizard/custom_field.rb"
@@ -100,7 +100,7 @@ after_initialize do
   require_relative "lib/custom_wizard/extensions/custom_field/extension.rb"
   require_relative "lib/custom_wizard/extensions/discourse_tagging.rb"
 
-  register_reviewable_type ReviewableCustomWizardAction
+  register_reviewable_type ReviewableCustomWizardSubmission
 
   Liquid::Template.error_mode = :strict
 

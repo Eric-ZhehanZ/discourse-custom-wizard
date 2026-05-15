@@ -138,7 +138,13 @@ class CustomWizard::Template
   end
 
   def self.can_redirect_users?(wizard_id)
-    after_signup_ids.include?(wizard_id) || after_time_ids.include?(wizard_id)
+    return true if after_signup_ids.include?(wizard_id)
+    return true if after_time_ids.include?(wizard_id)
+    # Allow access-gating wizards to redirect users (hold page on pending
+    # review, force-redo on denial).
+    tmpl = find(wizard_id)
+    return true if tmpl.is_a?(Hash) && tmpl["restrict_to_approved"]
+    false
   end
 
   def self.clear_cache_keys

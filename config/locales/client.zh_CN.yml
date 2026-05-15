@@ -2,17 +2,18 @@ zh_CN:
   js:
     reviewables:
       actions:
-        approve_wizard_action:
+        approve_wizard_submission:
           title: "批准"
-          description: "批准并执行此待审核的向导动作。"
-        reject_wizard_action:
+          description: "批准此向导提交，并对该用户执行已标记的动作。"
+        reject_wizard_submission:
           title: "拒绝"
-          description: "丢弃此待审核的向导动作；用户当前状态保持不变。"
+          description: "拒绝此向导提交。系统会通知用户并提示其重新提交。"
       reasons:
-        custom_wizard_action: "待审核的向导动作"
+        custom_wizard_submission: "待审核的向导提交"
     wizard:
       complete_custom: "完成 {{name}}"
       completed: "您已完成此向导。"
+      pending_review: "您的提交正在等待版主审核。审核完成后，您将收到系统消息和电子邮件通知。在此之前，请保持在本页等待。"
       not_permitted: "您没有权限访问此向导。"
       none: "这里没有向导。"
       return_to_site: "返回 {{siteName}}。"
@@ -105,6 +106,8 @@ zh_CN:
         after_signup_label: "用户注册后引导至向导。"
         delay_approval_until_finish: "延迟审批"
         delay_approval_until_finish_label: "在用户完成向导后将其送回管理员审核队列。强制向导为必填（禁止跳过），完成时注销用户。需要启用\u201C注册后\u201D。"
+        restrict_to_approved: "提交审核通过前限制访问"
+        restrict_to_approved_label: "对于从未有过审核通过提交的用户，提交后将被自动引导回向导，直到版主批准；被拒绝的提交也会引导回向导。已经有审核通过提交的用户在新提交等待审核期间保持原有访问权限不变。"
         after_time: "定时"
         after_time_label: "在指定时间后引导用户至向导："
         after_time_time_label: "开始时间"

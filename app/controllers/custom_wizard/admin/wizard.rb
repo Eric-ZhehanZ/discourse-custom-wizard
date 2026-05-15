@@ -71,6 +71,7 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
       :multiple_submissions,
       :after_signup,
       :delay_approval_until_finish,
+      :restrict_to_approved,
       :after_time,
       :after_time_scheduled,
       :required,

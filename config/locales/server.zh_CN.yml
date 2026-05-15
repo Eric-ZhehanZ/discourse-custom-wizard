@@ -4,6 +4,41 @@ zh_CN:
       submission:
         no_user: "已删除（user_id：%{user_id}）"
 
+  reviewables:
+    actions:
+      approve_wizard_submission:
+        title: "批准"
+        description: "批准此向导提交，并对该用户执行已标记的动作。"
+      reject_wizard_submission:
+        title: "拒绝"
+        description: "拒绝此向导提交。系统会通知用户并提示其重新提交。"
+
+  system_messages:
+    custom_wizard_review_approved:
+      title: "您的提交已被批准"
+      subject_template: "您的 %{wizard_name} 提交已被批准"
+      text_body_template: |
+        您好 %{username}，
+
+        您提交的 **%{wizard_name}** 已由 **%{reviewer}** 批准。
+
+        您的账户已应用所提交的信息，访问权限已恢复正常。
+
+        谢谢！
+    custom_wizard_review_denied:
+      title: "您的提交需要修改"
+      subject_template: "您的 %{wizard_name} 提交需要修改"
+      no_reason: "（未提供拒绝原因）"
+      text_body_template: |
+        您好 %{username}，
+
+        您提交的 **%{wizard_name}** 未通过审核。
+
+        审核人：**%{reviewer}**
+        原因：%{reason}
+
+        请[重新提交此表单](%{wizard_url})以继续。
+
   wizard:
     custom_title: "向导"
 

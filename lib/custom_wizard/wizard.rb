@@ -18,6 +18,7 @@ class CustomWizard::Wizard
                 :after_time_group_names,
                 :after_signup,
                 :delay_approval_until_finish,
+                :restrict_to_approved,
                 :required,
                 :prompt_completion,
                 :restart_on_revisit,
@@ -59,6 +60,7 @@ class CustomWizard::Wizard
     @resume_on_revisit = cast_bool(attrs["resume_on_revisit"])
     @after_signup = cast_bool(attrs["after_signup"])
     @delay_approval_until_finish = cast_bool(attrs["delay_approval_until_finish"])
+    @restrict_to_approved = cast_bool(attrs["restrict_to_approved"])
     @after_time = cast_bool(attrs["after_time"])
     @after_time_scheduled = attrs["after_time_scheduled"]
     @after_time_group_names = attrs["after_time_groups"]
@@ -256,7 +258,23 @@ class CustomWizard::Wizard
   end
 
   def should_redirect?
+    return true if access_gated_redirect?
     can_access?(always_allow_admin: false) && after_time_target?
+  end
+
+  def access_gated_redirect?
+    return false unless restrict_to_approved
+    return false unless user
+
+    state = user.custom_fields["wizard_review_state_#{id}"]
+    case state
+    when "denied"
+      true
+    when "pending"
+      !user.custom_fields["wizard_approved_#{id}"]
+    else
+      false
+    end
   end
 
   def reset

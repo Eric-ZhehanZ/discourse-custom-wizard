@@ -110,6 +110,16 @@
 
     <div class="setting">
       <div class="setting-label">
+        <label>{{i18n "admin.wizard.restrict_to_approved"}}</label>
+      </div>
+      <div class="setting-value">
+        <Input @type="checkbox" @checked={{this.wizard.restrict_to_approved}} />
+        <span>{{i18n "admin.wizard.restrict_to_approved_label"}}</span>
+      </div>
+    </div>
+
+    <div class="setting">
+      <div class="setting-label">
         <label>{{i18n "admin.wizard.prompt_completion"}}</label>
       </div>
       <div class="setting-value">
