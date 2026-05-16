@@ -956,7 +956,11 @@ $error: #ef1700;
       text-align: left;
     }
     th { background: var(--primary-very-low); font-weight: 600; }
-    td.field-label { width: 30%; color: var(--primary-medium); }
+    th:first-child, td.field-label {
+      width: 200px;
+      min-width: 160px;
+      color: var(--primary-medium);
+    }
     td.field-value { white-space: pre-wrap; word-break: break-word; }
   }
 }
