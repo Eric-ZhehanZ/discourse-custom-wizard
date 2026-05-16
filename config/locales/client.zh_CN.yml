@@ -10,6 +10,11 @@ zh_CN:
           description: "拒绝此向导提交。系统会通知用户并提示其重新提交。"
       reasons:
         custom_wizard_submission: "待审核的向导提交"
+    review:
+      types:
+        reviewable_custom_wizard_submission:
+          title: "向导提交"
+          noun: "提交"
     admin:
       wizard:
         review:

@@ -10,6 +10,11 @@ en:
           description: "Reject this wizard submission. The user is notified and asked to resubmit."
       reasons:
         custom_wizard_submission: "Pending wizard submission"
+    review:
+      types:
+        reviewable_custom_wizard_submission:
+          title: "Wizard submission"
+          noun: "submission"
     admin:
       wizard:
         review:
