@@ -125,7 +125,14 @@ export default Component.extend(UndoChanges, {
     let options = {
       wizardFieldSelection: true,
       textSelection: true,
-      userFieldSelection: "key,value",
+      // Enable userField for every selector slot (incl. the assignment
+      // output), so prefill can grab the current user's name /
+      // username / email / bio / custom user fields — same as
+      // conditions already do. The previous "key,value" restricted
+      // it to pair positions which never appear in a prefill input.
+      userFieldSelection: true,
+      userFieldOptionsSelection: true,
+      customFieldSelection: true,
       context: "field",
     };
 
