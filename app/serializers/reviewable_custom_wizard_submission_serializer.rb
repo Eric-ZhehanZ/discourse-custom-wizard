@@ -47,8 +47,6 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
     }
   end
 
-  IMAGE_EXTENSIONS = %w[jpg jpeg png gif webp svg bmp].freeze
-
   # Resolve field IDs to the labels that were configured on the wizard at
   # serialization time. We don't snapshot labels into the payload so a
   # later wizard rename is reflected, but we fall back to the raw id if
@@ -114,17 +112,9 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
 
   def classify(value)
     if value.is_a?(Hash) && value["url"].is_a?(String) && (value["extension"] || value["width"])
-      ext = value["extension"].to_s.downcase
       filename = value["original_filename"].presence || value["url"]
-      upload = {
-        url: value["url"],
-        filename: filename,
-        width: value["width"],
-        height: value["height"],
-        human_filesize: value["human_filesize"],
-      }
-      type = IMAGE_EXTENSIONS.include?(ext) ? "image" : "upload"
-      return [type, filename, upload]
+      upload = { url: value["url"], filename: filename }
+      return ["upload", filename, upload]
     end
 
     ["text", stringify(value), nil]

@@ -20,6 +20,12 @@ zh_CN:
           column_value: "提交值"
           admin_link: "管理"
           unnamed_wizard: "（未命名的向导）"
+          reject_modal:
+            title: "拒绝提交"
+            instructions: "请告诉用户为何此次提交未被接受。用户会被提示重新提交。"
+            placeholder: "向用户展示的拒绝原因（例如：'照片模糊，请重新上传'）。"
+            send_email: "同时邮件通知用户"
+            confirm: "拒绝"
     wizard:
       complete_custom: "完成 {{name}}"
       completed: "您已完成此向导。"

@@ -1,18 +1,16 @@
-import RejectReasonReviewableModal from "discourse/components/modal/reject-reason-reviewable";
 import { registerReviewableActionModal } from "discourse/components/reviewable/item";
+import WizardRejectReasonModal from "../components/modal/wizard-reject-reason";
 
-// Open the standard "reject with reason" modal when a moderator clicks
-// Reject on a wizard submission, so they can attach a free-form reason
-// (and decide whether to email the user). The reason is forwarded via
-// the perform endpoint's `reject_reason` arg, which
-// ReviewableCustomWizardSubmission#perform_reject_wizard_submission
-// already passes into the system message template.
+// Open our purpose-built reject-with-reason modal when a moderator
+// clicks Reject on a wizard submission. The reason flows through the
+// perform endpoint's `reject_reason` arg (set on the reviewable by the
+// modal) into the denial system message.
 export default {
   name: "wizard-reviewable-reject-modal",
   initialize() {
     registerReviewableActionModal(
       "reject_wizard_submission",
-      RejectReasonReviewableModal
+      WizardRejectReasonModal
     );
   },
 };

@@ -20,6 +20,12 @@ en:
           column_value: "Submitted value"
           admin_link: "admin"
           unnamed_wizard: "(unnamed wizard)"
+          reject_modal:
+            title: "Reject submission"
+            instructions: "Tell the user why their submission isn't accepted. They'll be asked to resubmit."
+            placeholder: "Reason shown to the user (e.g. 'photo is blurry, please re-upload')."
+            send_email: "Email the user"
+            confirm: "Reject"
     wizard:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."

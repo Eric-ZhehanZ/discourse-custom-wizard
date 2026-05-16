@@ -1,7 +1,5 @@
 import Component from "@glimmer/component";
-import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import avatar from "discourse/helpers/avatar";
-import lightbox from "discourse/lib/lightbox";
 import { eq } from "discourse/truth-helpers";
 import { i18n } from "discourse-i18n";
 
@@ -9,13 +7,6 @@ import { i18n } from "discourse-i18n";
 function maybeI18n(key, fallback) {
   const value = i18n(key);
   return value === key ? fallback : value;
-}
-
-function initLightbox(element) {
-  // PhotoSwipe auto-binds to .lightbox anchors inside the container.
-  if (element) {
-    lightbox(element);
-  }
 }
 
 export default class ReviewableCustomWizardSubmission extends Component {
@@ -113,7 +104,7 @@ export default class ReviewableCustomWizardSubmission extends Component {
       {{/if}}
 
       {{#if this.fields.length}}
-        <div class="wizard-submission-fields" {{didInsert initLightbox}}>
+        <div class="wizard-submission-fields">
           <h4>{{i18n "admin.wizard.review.fields_heading"}}</h4>
           <table class="wizard-submission-table">
             <thead>
@@ -127,20 +118,7 @@ export default class ReviewableCustomWizardSubmission extends Component {
                 <tr>
                   <td class="field-label">{{field.label}}</td>
                   <td class="field-value">
-                    {{#if (eq field.type "image")}}
-                      <a
-                        class="lightbox wizard-upload-thumb"
-                        href={{field.upload.url}}
-                        title={{field.upload.filename}}
-                      >
-                        <img
-                          class="wizard-upload-preview"
-                          src={{field.upload.url}}
-                          alt={{field.upload.filename}}
-                          loading="lazy"
-                        />
-                      </a>
-                    {{else if (eq field.type "upload")}}
+                    {{#if (eq field.type "upload")}}
                       <a
                         class="wizard-upload-link"
                         href={{field.upload.url}}

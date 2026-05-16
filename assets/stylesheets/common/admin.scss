@@ -962,45 +962,8 @@ $error: #ef1700;
 }
 
 .custom-wizard-submission-review {
-  .wizard-upload-thumb {
-    display: inline-block;
-    line-height: 0;
-    // Discourse's global .lightbox styling adds a translucent
-    // overlay + blur on hover. None of that makes sense for a
-    // 56px admin thumbnail; flatten it.
-    background: none !important;
-    border: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-  }
-  .wizard-upload-preview {
-    width: 56px;
-    height: 56px;
-    object-fit: cover;
-    border-radius: 4px;
-    display: block;
-    filter: none !important;
-    transform: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-  }
   .wizard-upload-link {
     font-family: monospace;
     word-break: break-all;
-  }
-
-  // The thumbnail row would otherwise be ~56px tall while the
-  // text rows are ~24px, throwing the label baseline off. Pin
-  // a consistent row height so labels line up, and let the
-  // image sit centered within its cell when it's smaller.
-  .wizard-submission-table {
-    td.field-label {
-      // Keep the label aligned with the first line of the value
-      // (image OR text) instead of floating to the row's mid-line.
-      padding-top: 8px;
-    }
-    td.field-value {
-      line-height: 1.4;
-    }
   }
 }
