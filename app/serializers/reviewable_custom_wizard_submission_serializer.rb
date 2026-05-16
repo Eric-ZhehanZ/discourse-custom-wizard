@@ -33,7 +33,7 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
   end
 
   def submission_user
-    user = object.target
+    user = object.created_by || (object.target if object.target.is_a?(User))
     return nil unless user.is_a?(User)
 
     {

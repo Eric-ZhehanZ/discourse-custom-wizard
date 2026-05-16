@@ -53,7 +53,8 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
           end
         end
 
-        if flagged_actions.any?
+        has_flagged_actions = flagged_actions.any?
+        if has_flagged_actions
           CustomWizard::PendingSubmission.enqueue(
             actions: flagged_actions,
             wizard: @wizard,
@@ -69,9 +70,18 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
           updater.result[:redirect_on_complete] = redirect
         end
 
-        @wizard.cleanup_on_complete!
+        if has_flagged_actions
+          # Leave the submission OPEN (no submitted_at) so the user keeps
+          # their answers if rejected and needs to resubmit. The
+          # reviewable holds the snapshot used for action replay; the
+          # ongoing submission is only kept for re-edit convenience.
+          # Approval / rejection drives the final lifecycle via
+          # ReviewableCustomWizardSubmission#mark_user_approved! etc.
+        else
+          @wizard.cleanup_on_complete!
+        end
 
-        if was_in_delayed_approval
+        if was_in_delayed_approval && !has_flagged_actions
           # Override any route_to / redirect_on_next from the wizard config:
           # delayed-approval wizards always end with the user logged out and sent
           # to the login flow, where Discourse's existing not-approved UX takes over.

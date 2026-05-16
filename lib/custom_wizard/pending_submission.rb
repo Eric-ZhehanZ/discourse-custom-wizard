@@ -17,33 +17,34 @@ module CustomWizard::PendingSubmission
         {}
       end
 
-    # Discourse enforces UNIQUE (type, target_id) on the reviewables
-    # table, so re-submissions can't INSERT a second row even with a
-    # different status. Instead, find the user's existing row (any
-    # status) and overwrite it, resetting to pending. This naturally
-    # supersedes both lingering pending rows AND prior denied/approved
-    # rows for the same user. Status-change history is still tracked
-    # via reviewable_histories.
+    # Each submission gets its own reviewable row so the queue/history
+    # shows one record per submission. Prior pending rows for the same
+    # (user, wizard) are demoted to "ignored" so a fresh submission
+    # voids any earlier review that hasn't been actioned yet — prior
+    # approved/rejected rows are kept untouched as audit history.
+    #
+    # We leave target_id NULL (Postgres treats NULLs as distinct in
+    # the UNIQUE(type, target_id) index) so the constraint allows
+    # multiple rows per user.
+    ReviewableCustomWizardSubmission
+      .pending
+      .where(created_by_id: user.id)
+      .where("payload ->> 'wizard_id' = ?", wizard.id)
+      .find_each { |r| r.update!(status: Reviewable.statuses[:ignored]) }
+
     Reviewable.transaction do
       reviewable =
-        ReviewableCustomWizardSubmission.find_or_initialize_by(
-          target_id: user.id,
-          target_type: "User",
+        ReviewableCustomWizardSubmission.new(
+          created_by: user,
+          target_created_by_id: user.id,
+          reviewable_by_moderator: true,
+          payload: {
+            "wizard_id" => wizard.id,
+            "submission_id" => submission&.id,
+            "submission_fields" => fields_snapshot,
+            "actions" => actions,
+          },
         )
-
-      reviewable.created_by = user
-      reviewable.target = user
-      reviewable.target_created_by_id = user.id
-      reviewable.reviewable_by_moderator = true
-      reviewable.payload = {
-        "wizard_id" => wizard.id,
-        "submission_id" => submission&.id,
-        "submission_fields" => fields_snapshot,
-        "actions" => actions,
-      }
-      reviewable.status = Reviewable.statuses[:pending]
-      reviewable.score = 0
-      reviewable.reject_reason = nil
 
       if reviewable.save
         reviewable.add_score(

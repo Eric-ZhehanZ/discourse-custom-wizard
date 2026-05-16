@@ -56,7 +56,7 @@ class ReviewableCustomWizardSubmission < Reviewable
   private
 
   def review_user
-    @review_user ||= (target.is_a?(User) ? target : User.find_by(id: target_id))
+    @review_user ||= created_by || (target.is_a?(User) ? target : nil)
   end
 
   def submission_fields
@@ -100,6 +100,21 @@ class ReviewableCustomWizardSubmission < Reviewable
       fresh.custom_fields.delete("redirect_to_wizard")
     end
     fresh.save_custom_fields
+
+    # Close out the open submission so the user starts fresh next time
+    # (this is what cleanup_on_complete! does for non-review wizards;
+    # we deferred it until the review decision lands).
+    begin
+      builder = CustomWizard::Builder.new(wizard_id, fresh)
+      wiz = builder.build
+      sub = wiz&.current_submission
+      if sub && !sub.submitted_at
+        sub.submitted_at = Time.now.iso8601
+        sub.save
+      end
+    rescue StandardError => e
+      Rails.logger.warn("custom_wizard: failed to close submission for user #{fresh.id}: #{e.class}: #{e.message}")
+    end
   end
 
   def mark_user_denied!
