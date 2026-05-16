@@ -35,6 +35,7 @@ en:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."
       pending_review: "Your submission is pending moderator review. You'll receive a system message and an email when a decision is made. Until then, please wait here."
+      recently_approved: "Your submission has been approved. You can now return to the site. Open this form again later if you need to update your details."
       not_permitted: "You are not permitted to access this wizard."
       none: "There is no wizard here."
       return_to_site: "Return to {{siteName}}."

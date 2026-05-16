@@ -11,11 +11,13 @@ export default Route.extend({
       wizard &&
       wizard.pending_review &&
       !wizard.previously_approved;
+    const recentlyApproved = wizard && wizard.recently_approved;
     if (
       wizard &&
       wizard.permitted &&
       !wizard.completed &&
       !onHold &&
+      !recentlyApproved &&
       wizard.start
     ) {
       this.router.replaceWith("customWizardStep", wizard.start);
@@ -38,6 +40,7 @@ export default Route.extend({
       const previouslyApproved = !!model.get("previously_approved");
       const pendingReview =
         !!model.get("pending_review") && !previouslyApproved;
+      const recentlyApproved = !!model.get("recently_approved");
 
       const props = {
         requiresLogin,
@@ -47,6 +50,7 @@ export default Route.extend({
         notPermitted,
         wizardId,
         pendingReview,
+        recentlyApproved,
         previouslyApproved,
       };
       controller.setProperties(props);

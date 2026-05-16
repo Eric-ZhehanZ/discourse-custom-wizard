@@ -96,6 +96,10 @@ class ReviewableCustomWizardSubmission < Reviewable
     fresh = User.find(review_user.id)
     fresh.custom_fields["wizard_approved_#{wizard_id}"] = true
     fresh.custom_fields["wizard_review_state_#{wizard_id}"] = "approved"
+    # Reset the "already-saw the approval confirmation" marker so the
+    # user gets the success screen on the first wizard visit after
+    # THIS approval (independent of any earlier approval rounds).
+    fresh.custom_fields.delete("wizard_approved_seen_#{wizard_id}")
     if fresh.custom_fields["redirect_to_wizard"].to_s == wizard_id.to_s
       fresh.custom_fields.delete("redirect_to_wizard")
     end

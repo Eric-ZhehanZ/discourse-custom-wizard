@@ -7,6 +7,7 @@ const reasons = {
   requiresLogin: "requires_login",
   notPermitted: "not_permitted",
   pendingReview: "pending_review",
+  recentlyApproved: "recently_approved",
   completed: "completed",
 };
 
@@ -16,6 +17,7 @@ export default Controller.extend({
     "requiresLogin",
     "notPermitted",
     "pendingReview",
+    "recentlyApproved",
     "completed"
   ),
 

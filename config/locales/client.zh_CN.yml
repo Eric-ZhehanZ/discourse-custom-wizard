@@ -35,6 +35,7 @@ zh_CN:
       complete_custom: "完成 {{name}}"
       completed: "您已完成此向导。"
       pending_review: "您的提交正在等待版主审核。审核完成后，您将收到系统消息和电子邮件通知。在此之前，请保持在本页等待。"
+      recently_approved: "您的提交已通过审核，现在可以正常访问站点。若需要更新资料，可稍后再次打开此表单。"
       not_permitted: "您没有权限访问此向导。"
       none: "这里没有向导。"
       return_to_site: "返回 {{siteName}}。"

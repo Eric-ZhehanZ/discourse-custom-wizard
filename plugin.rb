@@ -263,12 +263,24 @@ after_initialize do
       wizard_id = current_user.redirect_to_wizard
 
       if CustomWizard::Template.can_redirect_users?(wizard_id)
-        if url !~ %r{/w/} && url !~ %r{/invites/}
-          CustomWizard::Wizard.set_wizard_redirect(current_user, wizard_id, url)
-        end
-
         wizard = CustomWizard::Wizard.create(wizard_id, current_user)
-        redirect_to "/w/#{wizard_id.dasherize}" if wizard.should_redirect?
+
+        # Clear the redirect (and skip it) when the wizard is no longer
+        # reachable for this user — they were added to the exempt
+        # group, the wizard was deleted, or its permitted-groups
+        # config now excludes them. Without this we'd bounce them to
+        # a "not permitted" screen on every page load.
+        if wizard.blank? || wizard.exempt_for_user?(current_user) ||
+             !wizard.can_access?(always_allow_admin: false)
+          current_user.custom_fields.delete("redirect_to_wizard")
+          current_user.save_custom_fields
+        else
+          if url !~ %r{/w/} && url !~ %r{/invites/}
+            CustomWizard::Wizard.set_wizard_redirect(current_user, wizard_id, url)
+          end
+
+          redirect_to "/w/#{wizard_id.dasherize}" if wizard.should_redirect?
+        end
       end
     end
   end
