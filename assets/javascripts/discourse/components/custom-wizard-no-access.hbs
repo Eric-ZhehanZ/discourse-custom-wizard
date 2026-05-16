@@ -1,8 +1,10 @@
 <div>{{this.text}}</div>
 <div class="no-access-gutter">
-  <a class="return-to-site" {{action "skip"}} role="button">
-    {{i18n "wizard.return_to_site" siteName=this.siteName}}
-  </a>
+  {{#if this.showReturnLink}}
+    <a class="return-to-site" {{action "skip"}} role="button">
+      {{i18n "wizard.return_to_site" siteName=this.siteName}}
+    </a>
+  {{/if}}
   {{#if this.showLoginButton}}
     <DButton
       class="btn-primary btn-small login-button"

@@ -35,8 +35,9 @@ export default Route.extend({
       const name = model.get("name");
       const requiresLogin = !user && !permitted;
       const notPermitted = !permitted;
+      const previouslyApproved = !!model.get("previously_approved");
       const pendingReview =
-        !!model.get("pending_review") && !model.get("previously_approved");
+        !!model.get("pending_review") && !previouslyApproved;
 
       const props = {
         requiresLogin,
@@ -46,6 +47,7 @@ export default Route.extend({
         notPermitted,
         wizardId,
         pendingReview,
+        previouslyApproved,
       };
       controller.setProperties(props);
     } else {

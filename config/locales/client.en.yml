@@ -118,6 +118,10 @@ en:
         delay_approval_until_finish_label: 'Send users back to the admin review queue after they finish the wizard. Forces the wizard to be required (skip is disabled) and logs users out on completion. Requires "Signup" to be enabled.'
         restrict_to_approved: "Gate access on review"
         restrict_to_approved_label: "Users who have never had an approved submission for this wizard are held (auto-redirected to the wizard) until a moderator approves their submission. Denied submissions also redirect back to the wizard. Users who were previously approved keep access while a new submission is pending."
+        restrict_required_groups: "Required groups"
+        restrict_required_groups_label: "Only members of these groups are required to complete this wizard (held until approved). Leave empty to require ALL non-staff users. Add a user to one of these groups to force re-verification."
+        restrict_exempt_groups: "Exempt groups"
+        restrict_exempt_groups_label: "Members of these groups skip this wizard entirely; the form is hidden from them and they're never redirected to it."
         after_time: "Time"
         after_time_label: "Users directed to wizard after start time:"
         after_time_time_label: "Start Time"

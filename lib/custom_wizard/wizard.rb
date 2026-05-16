@@ -19,6 +19,8 @@ class CustomWizard::Wizard
                 :after_signup,
                 :delay_approval_until_finish,
                 :restrict_to_approved,
+                :restrict_required_groups,
+                :restrict_exempt_groups,
                 :required,
                 :prompt_completion,
                 :restart_on_revisit,
@@ -69,6 +71,8 @@ class CustomWizard::Wizard
     @after_signup = cast_bool(attrs["after_signup"])
     @delay_approval_until_finish = cast_bool(attrs["delay_approval_until_finish"])
     @restrict_to_approved = cast_bool(attrs["restrict_to_approved"])
+    @restrict_required_groups = Array(attrs["restrict_required_groups"]).map(&:to_i).reject(&:zero?)
+    @restrict_exempt_groups = Array(attrs["restrict_exempt_groups"]).map(&:to_i).reject(&:zero?)
     @after_time = cast_bool(attrs["after_time"])
     @after_time_scheduled = attrs["after_time_scheduled"]
     @after_time_group_names = attrs["after_time_groups"]
@@ -271,6 +275,9 @@ class CustomWizard::Wizard
   end
 
   def can_access?(always_allow_admin: true)
+    # Users in an exempt group can't reach the wizard at all (their
+    # identity is already verified through another path).
+    return false if user && exempt_for_user?(user) && !(always_allow_admin && user.admin?)
     permitted?(always_allow_admin: always_allow_admin) && can_submit?
   end
 
@@ -284,6 +291,8 @@ class CustomWizard::Wizard
     return false unless user
     # Never lock staff out of the rest of the site.
     return false if user.staff?
+    # Users in an exempt group are never gated.
+    return false if exempt_for_user?(user)
 
     state = user.custom_fields["wizard_review_state_#{id}"]
     case state
@@ -292,9 +301,40 @@ class CustomWizard::Wizard
     when "pending"
       !user.custom_fields["wizard_approved_#{id}"]
     else
-      false
+      # No prior submission yet — gate if user must verify because of
+      # group membership AND hasn't already cleared this wizard.
+      required_for_user?(user) && !user.custom_fields["wizard_approved_#{id}"]
     end
   end
+
+  # True if the wizard is configured to require this user to complete it
+  # because they belong to one of the configured required groups (or no
+  # required groups are configured, in which case every non-exempt user
+  # is treated as required only if `restrict_to_approved` is on).
+  def required_for_user?(target_user)
+    return false unless target_user
+    return false if target_user.staff?
+    return false if exempt_for_user?(target_user)
+    return true if restrict_required_groups.blank?
+    user_group_ids = group_ids_for(target_user)
+    (restrict_required_groups & user_group_ids).any?
+  end
+
+  def exempt_for_user?(target_user)
+    return false unless target_user
+    return false if restrict_exempt_groups.blank?
+    user_group_ids = group_ids_for(target_user)
+    (restrict_exempt_groups & user_group_ids).any?
+  end
+
+  private
+
+  def group_ids_for(target_user)
+    @group_ids_for ||= {}
+    @group_ids_for[target_user.id] ||= GroupUser.where(user_id: target_user.id).pluck(:group_id)
+  end
+
+  public
 
   def reset
     return nil unless actor_id

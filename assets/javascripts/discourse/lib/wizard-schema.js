@@ -11,6 +11,8 @@ const wizard = {
     after_signup: null,
     delay_approval_until_finish: null,
     restrict_to_approved: null,
+    restrict_required_groups: null,
+    restrict_exempt_groups: null,
     after_time: null,
     after_time_scheduled: null,
     required: null,

@@ -5,6 +5,7 @@ class CustomWizard::Template
 
   AFTER_SIGNUP_CACHE_KEY ||= "after_signup_wizard_ids"
   AFTER_TIME_CACHE_KEY ||= "after_time_wizard_ids"
+  RESTRICT_TO_APPROVED_CACHE_KEY ||= "restrict_to_approved_wizard_ids"
 
   attr_reader :data, :opts, :steps, :actions
 
@@ -137,6 +138,12 @@ class CustomWizard::Template
     end
   end
 
+  def self.restrict_to_approved_ids
+    ::CustomWizard::Cache.wrap(RESTRICT_TO_APPROVED_CACHE_KEY) do
+      list(setting: "restrict_to_approved").map { |t| t["id"] }
+    end
+  end
+
   def self.can_redirect_users?(wizard_id)
     return true if after_signup_ids.include?(wizard_id)
     return true if after_time_ids.include?(wizard_id)
@@ -148,6 +155,7 @@ class CustomWizard::Template
   end
 
   def self.clear_cache_keys
+    CustomWizard::Cache.new(RESTRICT_TO_APPROVED_CACHE_KEY).delete
     CustomWizard::Cache.new(AFTER_SIGNUP_CACHE_KEY).delete
     CustomWizard::Cache.new(AFTER_TIME_CACHE_KEY).delete
   end

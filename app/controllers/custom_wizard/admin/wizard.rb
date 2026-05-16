@@ -72,6 +72,8 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
       :after_signup,
       :delay_approval_until_finish,
       :restrict_to_approved,
+      restrict_required_groups: [],
+      restrict_exempt_groups: [],
       :after_time,
       :after_time_scheduled,
       :required,

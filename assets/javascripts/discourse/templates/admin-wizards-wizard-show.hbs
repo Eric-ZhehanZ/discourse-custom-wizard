@@ -118,6 +118,46 @@
       </div>
     </div>
 
+    {{#if this.wizard.restrict_to_approved}}
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.restrict_required_groups"}}</label>
+        </div>
+        <div class="setting-value">
+          {{group-chooser
+            content=this.site.groups
+            value=this.wizard.restrict_required_groups
+            labelProperty="name"
+            onChange=(action (mut this.wizard.restrict_required_groups))
+          }}
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n
+                "admin.wizard.restrict_required_groups_label"
+              }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.restrict_exempt_groups"}}</label>
+        </div>
+        <div class="setting-value">
+          {{group-chooser
+            content=this.site.groups
+            value=this.wizard.restrict_exempt_groups
+            labelProperty="name"
+            onChange=(action (mut this.wizard.restrict_exempt_groups))
+          }}
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n
+                "admin.wizard.restrict_exempt_groups_label"
+              }}</label>
+          </div>
+        </div>
+      </div>
+    {{/if}}
+
     <div class="setting">
       <div class="setting-label">
         <label>{{i18n "admin.wizard.prompt_completion"}}</label>

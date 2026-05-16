@@ -150,6 +150,15 @@ after_initialize do
 
   on(:user_approved) do |user|
     if wizard = CustomWizard::Wizard.after_signup(user)
+      # Skip the auto-redirect when the wizard now opts into the new
+      # restrict_to_approved gating flow — its approval lifecycle is
+      # decoupled from Discourse's standard user-approval queue, so
+      # bouncing the user back through the wizard on every Discourse
+      # approval event would just loop already-verified users.
+      next if wizard.restrict_to_approved
+      # Also skip if the user has already cleared this wizard's
+      # review queue at least once.
+      next if user.custom_fields["wizard_approved_#{wizard.id}"]
       CustomWizard::Wizard.set_user_redirect(wizard.id, user)
     end
   end
@@ -226,6 +235,23 @@ after_initialize do
 
       redirect_to wizard_path_segment
       return
+    end
+
+    # Auto-flag the user for verification when they belong to a
+    # required group of any restrict_to_approved wizard and haven't
+    # already cleared it. Lets admins force re-verification simply by
+    # adding a user to the configured group.
+    if !current_user.staff? && current_user.custom_fields["redirect_to_wizard"].blank?
+      CustomWizard::Template.restrict_to_approved_ids.each do |wid|
+        next if current_user.custom_fields["wizard_approved_#{wid}"]
+        wiz = CustomWizard::Wizard.create(wid, current_user)
+        next unless wiz
+        if wiz.required_for_user?(current_user)
+          current_user.custom_fields["redirect_to_wizard"] = wid
+          current_user.save_custom_fields
+          break
+        end
+      end
     end
 
     @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/"]

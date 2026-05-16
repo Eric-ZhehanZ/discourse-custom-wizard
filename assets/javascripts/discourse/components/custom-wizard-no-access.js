@@ -24,6 +24,16 @@ export default Component.extend({
     return reason === "requiresLogin";
   },
 
+  // Hide the "return to site" link for held first-timers: their
+  // gated wizard is intentionally blocking access to the rest of
+  // the forum until they finish verification. Anyone who already
+  // had at least one approved submission (re-submission flow)
+  // still sees the link.
+  @discourseComputed("reason", "previouslyApproved")
+  showReturnLink(reason, previouslyApproved) {
+    return !(reason === "pendingReview" && !previouslyApproved);
+  },
+
   actions: {
     skip() {
       if (this.currentUser) {
