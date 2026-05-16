@@ -2,6 +2,7 @@
 CustomWizard::Engine.routes.draw do
   get ":wizard_id" => "wizard#show"
   put ":wizard_id/skip" => "wizard#skip"
+  post ":wizard_id/deactivate" => "wizard#deactivate"
   get ":wizard_id/steps" => "wizard#show"
   get ":wizard_id/steps/:step_id" => "wizard#show"
   put ":wizard_id/steps/:step_id" => "steps#update"

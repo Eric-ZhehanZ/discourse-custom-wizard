@@ -7,19 +7,14 @@ export default Route.extend({
 
   beforeModel() {
     const wizard = getCachedWizard();
-    const onHold =
-      wizard &&
-      wizard.pending_review &&
-      !wizard.previously_approved;
-    const recentlyApproved = wizard && wizard.recently_approved;
-    if (
-      wizard &&
-      wizard.permitted &&
-      !wizard.completed &&
-      !onHold &&
-      !recentlyApproved &&
-      wizard.start
-    ) {
+    if (!wizard) return;
+
+    // Any user with a review state (approved / pending / denied) lands
+    // on the status page instead of the form. They can opt into the
+    // form from the status page's secondary link.
+    if (wizard.review_state && wizard.review_state !== "none") return;
+
+    if (wizard.permitted && !wizard.completed && wizard.start) {
       this.router.replaceWith("customWizardStep", wizard.start);
     }
   },
@@ -37,20 +32,18 @@ export default Route.extend({
       const name = model.get("name");
       const requiresLogin = !user && !permitted;
       const notPermitted = !permitted;
+      const reviewState = model.get("review_state") || "none";
       const previouslyApproved = !!model.get("previously_approved");
-      const pendingReview =
-        !!model.get("pending_review") && !previouslyApproved;
-      const recentlyApproved = !!model.get("recently_approved");
 
       const props = {
+        wizardModel: model,
         requiresLogin,
         user,
         name,
         completed,
         notPermitted,
         wizardId,
-        pendingReview,
-        recentlyApproved,
+        reviewState,
         previouslyApproved,
       };
       controller.setProperties(props);

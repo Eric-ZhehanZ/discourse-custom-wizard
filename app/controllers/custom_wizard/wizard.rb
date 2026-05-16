@@ -44,6 +44,18 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
     render json: result
   end
 
+  # Self-deactivation for users who give up on a denied wizard. Drops
+  # them to inactive so they can't log back in until an admin
+  # reactivates the account.
+  def deactivate
+    raise Discourse::InvalidAccess.new unless current_user
+    raise Discourse::InvalidAccess.new if current_user.staff?
+
+    current_user.deactivate(Discourse.system_user)
+    log_off_user
+    render json: { success: true, redirect_to: "/" }
+  end
+
   protected
 
   def wizard

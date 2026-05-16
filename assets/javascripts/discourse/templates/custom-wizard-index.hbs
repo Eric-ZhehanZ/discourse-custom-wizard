@@ -1,4 +1,9 @@
-{{#if this.noAccess}}
+{{#if this.showStatusPage}}
+  <CustomWizardStatus
+    @wizard={{this.wizardModel}}
+    @wizardId={{this.wizardId}}
+  />
+{{else if this.noAccess}}
   <CustomWizardNoAccess
     @text={{i18n this.noAccessI18nKey}}
     @wizardId={{this.wizardId}}

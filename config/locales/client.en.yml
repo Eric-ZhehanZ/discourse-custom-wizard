@@ -34,9 +34,28 @@ en:
     wizard:
       complete_custom: "Complete the {{name}}"
       completed: "You have completed this wizard."
-      pending_review: "Your submission is pending moderator review. You'll receive a system message and an email when a decision is made. Until then, please wait here."
-      recently_approved: "Your submission has been approved. You can now return to the site. Open this form again later if you need to update your details."
       not_permitted: "You are not permitted to access this wizard."
+      status:
+        approved:
+          title: "You're verified"
+          body: "Your information is up to date. Continue to where you were going, or update your details below."
+          primary: "Continue"
+          secondary: "Update my information again"
+        pending_first:
+          title: "Submission pending review"
+          body: "A moderator is reviewing your submission. You'll receive a system message and an email once a decision is made. Stay on this page until then."
+        pending_update:
+          title: "Update pending review"
+          body: "Your existing information is still active while we review the update. We'll send a system message and email once it's been reviewed."
+          primary: "Continue to site"
+        pending:
+          refresh: "Refresh status"
+        denied:
+          title: "Submission needs changes"
+          body: "Please correct the issue below and submit again."
+          primary: "Resubmit"
+          secondary: "Give up and deactivate my account"
+          deactivate_confirm: "This will deactivate your account. You will be signed out and unable to log back in until an admin reactivates you. Continue?"
       none: "There is no wizard here."
       return_to_site: "Return to {{siteName}}."
       requires_login: "You need to be logged in to access this wizard."

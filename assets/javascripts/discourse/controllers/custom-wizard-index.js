@@ -6,20 +6,19 @@ const reasons = {
   noWizard: "none",
   requiresLogin: "requires_login",
   notPermitted: "not_permitted",
-  pendingReview: "pending_review",
-  recentlyApproved: "recently_approved",
   completed: "completed",
 };
 
 export default Controller.extend({
-  noAccess: or(
-    "noWizard",
-    "requiresLogin",
-    "notPermitted",
-    "pendingReview",
-    "recentlyApproved",
-    "completed"
-  ),
+  noAccess: or("noWizard", "requiresLogin", "notPermitted", "completed"),
+
+  // The new wizard status page handles approved/pending/denied. The
+  // legacy noAccess view still renders for the truly-no-access reasons
+  // (no wizard, no login, no permission, completed-and-done).
+  @discourseComputed("reviewState")
+  showStatusPage(state) {
+    return state && state !== "none";
+  },
 
   @discourseComputed("noAccessReason")
   noAccessI18nKey(reason) {

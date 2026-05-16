@@ -34,9 +34,28 @@ zh_CN:
     wizard:
       complete_custom: "完成 {{name}}"
       completed: "您已完成此向导。"
-      pending_review: "您的提交正在等待版主审核。审核完成后，您将收到系统消息和电子邮件通知。在此之前，请保持在本页等待。"
-      recently_approved: "您的提交已通过审核，现在可以正常访问站点。若需要更新资料，可稍后再次打开此表单。"
       not_permitted: "您没有权限访问此向导。"
+      status:
+        approved:
+          title: "您已通过验证"
+          body: "您的信息已是最新。点击下方按钮继续浏览站点，或修改您的资料。"
+          primary: "继续访问"
+          secondary: "重新提交以更新资料"
+        pending_first:
+          title: "提交等待审核"
+          body: "版主正在审核您的提交。审核完成后您将收到系统消息和电子邮件。请保持在本页直到审核结束。"
+        pending_update:
+          title: "更新等待审核"
+          body: "审核期间您的原资料仍然有效。审核完成后会以系统消息和邮件通知您。"
+          primary: "继续访问站点"
+        pending:
+          refresh: "刷新审核状态"
+        denied:
+          title: "提交需要修改"
+          body: "请根据下方原因修正后重新提交。"
+          primary: "重新提交"
+          secondary: "放弃并停用我的账号"
+          deactivate_confirm: "此操作将停用您的账号，并立即注销。除非管理员重新启用，否则您将无法再次登录。是否继续？"
       none: "这里没有向导。"
       return_to_site: "返回 {{siteName}}。"
       requires_login: "您需要登录才能访问此向导。"
