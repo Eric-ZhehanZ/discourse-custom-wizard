@@ -154,6 +154,15 @@ class CustomWizard::Action
           value =
             cast_profile_value(mapper.map_field(pair["value"], pair["value_type"]), pair["key"])
 
+          # Skip when the mapped value is missing — the wizard field
+          # was conditionally skipped or blank, so we don't want to
+          # nil out the user's existing profile attribute (and a
+          # `name=nil` etc. would fail validation and abort the whole
+          # update batch). Empty string is treated the same way for
+          # text/email-style fields where a blank wipe is unintended.
+          next if value.nil?
+          next if value.is_a?(String) && value.strip.empty?
+
           if user_field?(pair["key"])
             params[:custom_fields] ||= {}
             params[:custom_fields][key] = value
@@ -174,10 +183,14 @@ class CustomWizard::Action
       if result
         log_success("updated profile fields", "fields: #{params.keys.map(&:to_s).join(",")}")
       else
-        log_error("failed to update profile fields", "result: #{result.inspect}")
+        errors = user.errors.full_messages.join("; ") if user.errors.any?
+        log_error("failed to update profile fields", "result: #{result.inspect}; errors: #{errors}")
       end
     else
-      log_error("invalid profile fields params", "params: #{params.inspect}")
+      # All mapped values were blank — usually because a conditional
+      # wizard branch skipped the relevant fields. No work to do; not
+      # an error.
+      log_success("no profile fields to update", "")
     end
   end
 
@@ -338,7 +351,11 @@ class CustomWizard::Action
     group_map = group_map.flatten.compact
 
     if group_map.blank?
-      log_error("invalid group map")
+      # No groups resolved — typically because every configured input
+      # is a conditional that excluded this user (e.g. trust level
+      # mismatch). That is the action's correct no-op outcome, not an
+      # error worth surfacing on the user-visible queue.
+      log_success("no matching group to add", "")
       return
     end
 

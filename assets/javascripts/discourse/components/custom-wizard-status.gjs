@@ -8,6 +8,10 @@ import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
+import {
+  findCustomWizard,
+  updateCachedWizard,
+} from "../models/custom-wizard";
 
 // User-facing wizard status page. Uses the exact same DOM structure as
 // custom-wizard-step.hbs so it inherits the wizard's existing layout
@@ -101,13 +105,37 @@ export default class CustomWizardStatus extends Component {
       return;
     }
     if (this.isPending) {
-      // Re-fetch the wizard via the route's model hook instead of a
-      // full window reload.
-      this.router.refresh();
+      this._refreshStatus();
       return;
     }
     if (this.isDenied && this.canDeactivate) {
       this._deactivate();
+    }
+  }
+
+  // Pull fresh wizard JSON, swap key state fields on the existing
+  // model so the template re-renders in place, and update the shared
+  // wizard cache so other routes see the new state.
+  async _refreshStatus() {
+    if (this.submitting) return;
+    this.submitting = true;
+    try {
+      const fresh = await findCustomWizard(this.args.wizardId);
+      if (this.args.wizard?.setProperties) {
+        this.args.wizard.setProperties({
+          review_state: fresh.review_state,
+          pending_review: fresh.pending_review,
+          previously_approved: fresh.previously_approved,
+          must_redo: fresh.must_redo,
+          rejection_reason: fresh.rejection_reason,
+          redirect_back_url: fresh.redirect_back_url,
+        });
+      }
+      updateCachedWizard(fresh);
+    } catch (e) {
+      popupAjaxError(e);
+    } finally {
+      this.submitting = false;
     }
   }
 
