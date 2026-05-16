@@ -72,8 +72,6 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
       :after_signup,
       :delay_approval_until_finish,
       :restrict_to_approved,
-      restrict_required_groups: [],
-      restrict_exempt_groups: [],
       :after_time,
       :after_time_scheduled,
       :required,
@@ -83,6 +81,8 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
       :theme_id,
       permitted: mapped_params,
       after_time_groups: [],
+      restrict_required_groups: [],
+      restrict_exempt_groups: [],
       steps: [
         :id,
         :index,
