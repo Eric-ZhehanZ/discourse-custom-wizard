@@ -20,6 +20,22 @@ body.custom-wizard {
     }
   }
 
+  // Unify the visible width of the single-line field inputs. Browser
+  // defaults render text inputs around 150–200px and number inputs
+  // narrower (the spinner gutter eats content width); pin them to a
+  // shared max so a row of text/number/url/email fields all line up.
+  .wizard-field .input-area {
+    input[type="text"],
+    input[type="number"],
+    input[type="url"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"] {
+      width: 100%;
+      max-width: 360px;
+    }
+  }
+
   textarea {
     height: auto;
     padding: 0.55em 0.75em;
