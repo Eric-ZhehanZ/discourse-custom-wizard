@@ -108,7 +108,9 @@ class ReviewableCustomWizardSubmission < Reviewable
     fresh = User.find(review_user.id)
     fresh.custom_fields["wizard_review_state_#{wizard_id}"] = "denied"
     fresh.custom_fields.delete("wizard_approved_#{wizard_id}")
-    fresh.custom_fields["redirect_to_wizard"] = wizard_id
+    # Never force staff back to the wizard — they'd lock themselves out
+    # of the admin UI they need to manage the queue.
+    fresh.custom_fields["redirect_to_wizard"] = wizard_id unless fresh.staff?
     fresh.save_custom_fields
   end
 

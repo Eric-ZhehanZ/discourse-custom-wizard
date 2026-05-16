@@ -17,29 +17,33 @@ module CustomWizard::PendingSubmission
         {}
       end
 
-    # Supersede prior pending row for this user+wizard so re-submissions
-    # void earlier reviews not yet acted on.
-    existing =
-      ReviewableCustomWizardSubmission.pending.where(
-        target_id: user.id,
-        target_type: "User",
-      ).where("payload ->> 'wizard_id' = ?", wizard.id)
-    existing.find_each { |r| r.update!(status: Reviewable.statuses[:ignored]) }
-
+    # Discourse enforces UNIQUE (type, target_id) on the reviewables
+    # table, so re-submissions can't INSERT a second row even with a
+    # different status. Instead, find the user's existing row (any
+    # status) and overwrite it, resetting to pending. This naturally
+    # supersedes both lingering pending rows AND prior denied/approved
+    # rows for the same user. Status-change history is still tracked
+    # via reviewable_histories.
     Reviewable.transaction do
       reviewable =
-        ReviewableCustomWizardSubmission.new(
-          created_by: user,
-          target: user,
-          target_created_by_id: user.id,
-          reviewable_by_moderator: true,
-          payload: {
-            "wizard_id" => wizard.id,
-            "submission_id" => submission&.id,
-            "submission_fields" => fields_snapshot,
-            "actions" => actions,
-          },
+        ReviewableCustomWizardSubmission.find_or_initialize_by(
+          target_id: user.id,
+          target_type: "User",
         )
+
+      reviewable.created_by = user
+      reviewable.target = user
+      reviewable.target_created_by_id = user.id
+      reviewable.reviewable_by_moderator = true
+      reviewable.payload = {
+        "wizard_id" => wizard.id,
+        "submission_id" => submission&.id,
+        "submission_fields" => fields_snapshot,
+        "actions" => actions,
+      }
+      reviewable.status = Reviewable.statuses[:pending]
+      reviewable.score = 0
+      reviewable.reject_reason = nil
 
       if reviewable.save
         reviewable.add_score(
@@ -50,10 +54,13 @@ module CustomWizard::PendingSubmission
         )
 
         user.custom_fields["wizard_review_state_#{wizard.id}"] = "pending"
-        # Hold the user (redirect to the wizard's pending-review page) only
-        # when (a) the wizard opts in to gating, AND (b) the user has never
-        # had an approved submission for this wizard.
-        if wizard.restrict_to_approved && !user.custom_fields["wizard_approved_#{wizard.id}"]
+        # Hold (redirect to wizard) only when the wizard opts in,
+        # the user has never been approved for it, AND they aren't
+        # staff (admins testing the wizard must not lock themselves
+        # out of /admin etc).
+        if wizard.restrict_to_approved &&
+             !user.custom_fields["wizard_approved_#{wizard.id}"] &&
+             !user.staff?
           user.custom_fields["redirect_to_wizard"] = wizard.id
         end
         user.save_custom_fields

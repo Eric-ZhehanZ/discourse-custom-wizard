@@ -282,6 +282,8 @@ class CustomWizard::Wizard
   def access_gated_redirect?
     return false unless restrict_to_approved
     return false unless user
+    # Never lock staff out of the rest of the site.
+    return false if user.staff?
 
     state = user.custom_fields["wizard_review_state_#{id}"]
     case state
