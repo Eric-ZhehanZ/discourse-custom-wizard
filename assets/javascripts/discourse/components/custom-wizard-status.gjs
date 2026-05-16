@@ -86,7 +86,8 @@ export default class CustomWizardStatus extends Component {
   }
 
   @action
-  primary() {
+  primary(event) {
+    event?.preventDefault?.();
     if (this.isApproved || (this.isPending && !this.isPendingFirstTime)) {
       // Use Discourse's URL router so internal destinations transition
       // via Ember instead of triggering a full page reload.
@@ -99,7 +100,12 @@ export default class CustomWizardStatus extends Component {
   }
 
   @action
-  secondary() {
+  secondary(event) {
+    // The link element renders with an empty href so it picks up
+    // Discourse's action-link styling; preventing default stops the
+    // browser from "navigating" to the same URL (which would look
+    // like an unnecessary hard refresh on top of our SPA action).
+    event?.preventDefault?.();
     if (this.isApproved) {
       this._openWizardForm();
       return;

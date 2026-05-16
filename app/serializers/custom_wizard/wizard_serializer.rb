@@ -56,13 +56,13 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
   end
 
   # One of "none" / "pending" / "approved" / "denied". Drives the
-  # user-facing wizard status page. Staff always see "none" so an
-  # admin testing the wizard never gets locked into the status flow
-  # (form / approved / denied screen) — they can submit, review, and
-  # iterate without their own state masking the editor.
+  # user-facing wizard status page. Staff still see their own state
+  # so admins can walk through the approved / pending / denied
+  # screens while testing — they're protected from the actual
+  # lockout (forced redirect + Guardian denial) by the staff
+  # exemptions in plugin.rb and lib/custom_wizard/extensions/.
   def review_state
     return "none" unless object.user
-    return "none" if object.user.staff?
     object.user.custom_fields["wizard_review_state_#{object.id}"].to_s.presence || "none"
   end
 

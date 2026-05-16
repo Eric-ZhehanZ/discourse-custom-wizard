@@ -237,11 +237,18 @@ after_initialize do
       return
     end
 
+    # Staff are never auto-redirected to a wizard via this middleware:
+    # they need uninterrupted access to /admin to manage the queue,
+    # and they can always visit /w/<id> manually to test wizards or
+    # walk through approved/denied screens. Bail before the
+    # required-group flagging and the final redirect block.
+    return if current_user.staff?
+
     # Auto-flag the user for verification when they belong to a
     # required group of any restrict_to_approved wizard and haven't
     # already cleared it. Lets admins force re-verification simply by
     # adding a user to the configured group.
-    if !current_user.staff? && current_user.custom_fields["redirect_to_wizard"].blank?
+    if current_user.custom_fields["redirect_to_wizard"].blank?
       CustomWizard::Template.restrict_to_approved_ids.each do |wid|
         next if current_user.custom_fields["wizard_approved_#{wid}"]
         wiz = CustomWizard::Wizard.create(wid, current_user)
@@ -254,7 +261,7 @@ after_initialize do
       end
     end
 
-    @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/"]
+    @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/", "/admin"]
     url = request.referer || request.original_url
     excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url }
     not_api = request.format === "text/html"
