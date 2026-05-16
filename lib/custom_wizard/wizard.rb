@@ -289,9 +289,9 @@ class CustomWizard::Wizard
   def access_gated_redirect?
     return false unless restrict_to_approved
     return false unless user
-    # Never lock staff out of the rest of the site.
-    return false if user.staff?
-    # Users in an exempt group are never gated.
+    # Users in an exempt group are never gated. Staff are NOT exempt
+    # by default — they take the wizard like everyone else. /admin
+    # stays accessible as the escape hatch (see plugin.rb middleware).
     return false if exempt_for_user?(user)
 
     state = user.custom_fields["wizard_review_state_#{id}"]
@@ -313,7 +313,6 @@ class CustomWizard::Wizard
   # is treated as required only if `restrict_to_approved` is on).
   def required_for_user?(target_user)
     return false unless target_user
-    return false if target_user.staff?
     return false if exempt_for_user?(target_user)
     return true if restrict_required_groups.blank?
     user_group_ids = group_ids_for(target_user)

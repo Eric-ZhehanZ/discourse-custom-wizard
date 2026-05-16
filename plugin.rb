@@ -237,17 +237,12 @@ after_initialize do
       return
     end
 
-    # Staff are never auto-redirected to a wizard via this middleware:
-    # they need uninterrupted access to /admin to manage the queue,
-    # and they can always visit /w/<id> manually to test wizards or
-    # walk through approved/denied screens. Bail before the
-    # required-group flagging and the final redirect block.
-    return if current_user.staff?
-
     # Auto-flag the user for verification when they belong to a
     # required group of any restrict_to_approved wizard and haven't
     # already cleared it. Lets admins force re-verification simply by
-    # adding a user to the configured group.
+    # adding a user to the configured group. Staff are NOT exempt:
+    # they take the wizard like everyone else — they just always have
+    # /admin available as the escape hatch via excluded_route below.
     if current_user.custom_fields["redirect_to_wizard"].blank?
       CustomWizard::Template.restrict_to_approved_ids.each do |wid|
         next if current_user.custom_fields["wizard_approved_#{wid}"]
@@ -261,9 +256,15 @@ after_initialize do
       end
     end
 
+    # Match against BOTH the current request path and the referer/url:
+    # the upstream code only checked the latter, which meant a click
+    # from "/" to "/admin" wouldn't trip the /admin exclusion (referer
+    # was "/"). Checking request.path makes the exclusion reliable so
+    # admins can always reach /admin even while gated.
     @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/", "/admin"]
     url = request.referer || request.original_url
-    excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url }
+    path = request.path
+    excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url || /#{str}/ =~ path }
     not_api = request.format === "text/html"
 
     if not_api && !excluded_route

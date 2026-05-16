@@ -55,13 +55,13 @@ module CustomWizard::PendingSubmission
         )
 
         user.custom_fields["wizard_review_state_#{wizard.id}"] = "pending"
-        # Hold (redirect to wizard) only when the wizard opts in,
-        # the user has never been approved for it, AND they aren't
-        # staff (admins testing the wizard must not lock themselves
-        # out of /admin etc).
+        # Hold (redirect to wizard) only when the wizard opts in AND
+        # the user has never been approved for it. Staff are NOT
+        # exempt — they take the wizard like everyone else. /admin is
+        # always whitelisted from the redirect so admins can still
+        # reach the review queue to approve their own pending row.
         if wizard.restrict_to_approved &&
-             !user.custom_fields["wizard_approved_#{wizard.id}"] &&
-             !user.staff?
+             !user.custom_fields["wizard_approved_#{wizard.id}"]
           user.custom_fields["redirect_to_wizard"] = wizard.id
         end
         user.save_custom_fields
