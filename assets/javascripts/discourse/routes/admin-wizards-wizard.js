@@ -46,17 +46,33 @@ export default DiscourseRoute.extend({
   },
 
   _getUserFields(model) {
+    // Built-in user attributes that CustomWizard::Mapper#map_user_field
+    // already knows how to resolve server-side. Listing them here lets
+    // admins pick them in the field's prefill / content / condition
+    // mapper UI (and not just the admin-defined custom user fields
+    // returned by the user-field store).
+    const standard = [
+      { id: "name", name: "Name" },
+      { id: "username", name: "Username" },
+      { id: "email", name: "Email" },
+      { id: "title", name: "Title" },
+      { id: "trust_level", name: "Trust level" },
+      { id: "date_of_birth", name: "Date of birth" },
+      { id: "locale", name: "Locale" },
+      { id: "bio_raw", name: "Bio" },
+      { id: "location", name: "Location" },
+      { id: "website", name: "Website" },
+    ];
+
     return this.store.findAll("user-field").then((result) => {
-      if (result && result.content) {
-        set(
-          model,
-          "userFields",
-          result.content.map((f) => ({
-            id: `user_field_${f.id}`,
-            name: f.name,
-          }))
-        );
-      }
+      const custom =
+        result && result.content
+          ? result.content.map((f) => ({
+              id: `user_field_${f.id}`,
+              name: f.name,
+            }))
+          : [];
+      set(model, "userFields", [...standard, ...custom]);
     });
   },
 

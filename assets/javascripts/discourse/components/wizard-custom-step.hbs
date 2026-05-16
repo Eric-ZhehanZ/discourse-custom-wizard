@@ -7,6 +7,23 @@
   </div>
 </div>
 
+<div class="setting">
+  <div class="setting-label">
+    <label>{{i18n "admin.wizard.step.slug.label"}}</label>
+  </div>
+  <div class="setting-value">
+    <Input
+      name="slug"
+      class="medium"
+      @value={{this.pendingSlug}}
+      {{on "change" this.commitSlug}}
+    />
+    <label class="instructions">{{i18n
+        "admin.wizard.step.slug.instructions"
+      }}</label>
+  </div>
+</div>
+
 <div class="setting full">
   <div class="setting-label">
     <label>{{i18n "admin.wizard.step.banner"}}</label>

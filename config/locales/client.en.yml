@@ -316,6 +316,9 @@ en:
         step:
           header: "Steps"
           title: "Title"
+          slug:
+            label: "Slug"
+            instructions: "Custom URL slug for this step (e.g. 'verify-identity'). Changing this updates every action that runs after this step automatically."
           banner: "Banner"
           description: "Description"
           required_data:

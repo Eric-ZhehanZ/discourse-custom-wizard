@@ -316,6 +316,9 @@ zh_CN:
         step:
           header: "步骤"
           title: "标题"
+          slug:
+            label: "URL 名称"
+            instructions: "此步骤的自定义 URL 名称（如 'verify-identity'）。修改后，所有依赖此步骤完成时触发的动作会自动同步更新。"
           banner: "横幅"
           description: "描述"
           required_data:

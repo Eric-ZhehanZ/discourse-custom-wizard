@@ -80,6 +80,22 @@ body.custom-wizard {
   }
 }
 
+// The status page only has a title + paragraph + (optional) reason
+// inside .wizard-step-contents — without form fields it collapses to a
+// thin strip pinned just above the footer divider. Add explicit
+// breathing room around the body so it matches the visual rhythm of a
+// real form step.
+.wizard-step-contents.wizard-status-page {
+  .wizard-step-title {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  .wizard-step-description {
+    margin: 1.75em 0 2em;
+    line-height: 1.55;
+  }
+}
+
 .wizard-status__reason {
   padding: 10px 12px;
   background: var(--primary-very-low);

@@ -3,6 +3,7 @@ import { tracked } from "@glimmer/tracking";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
+import DiscourseURL from "discourse/lib/url";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
@@ -83,7 +84,9 @@ export default class CustomWizardStatus extends Component {
   @action
   primary() {
     if (this.isApproved || (this.isPending && !this.isPendingFirstTime)) {
-      window.location.href = this.destinationUrl;
+      // Use Discourse's URL router so internal destinations transition
+      // via Ember instead of triggering a full page reload.
+      DiscourseURL.routeTo(this.destinationUrl);
       return;
     }
     if (this.isDenied) {
@@ -98,7 +101,9 @@ export default class CustomWizardStatus extends Component {
       return;
     }
     if (this.isPending) {
-      window.location.reload();
+      // Re-fetch the wizard via the route's model hook instead of a
+      // full window reload.
+      this.router.refresh();
       return;
     }
     if (this.isDenied && this.canDeactivate) {
@@ -129,7 +134,7 @@ export default class CustomWizardStatus extends Component {
   }
 
   <template>
-    <div class="wizard-step-contents">
+    <div class="wizard-step-contents wizard-status-page">
       <h1 class="wizard-step-title">{{i18n this.titleKey}}</h1>
       <div class="wizard-step-description">{{i18n this.bodyKey}}</div>
       {{#if this.rejectionReason}}
