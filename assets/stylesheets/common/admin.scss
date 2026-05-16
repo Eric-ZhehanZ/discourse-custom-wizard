@@ -948,16 +948,32 @@ $error: #ef1700;
     width: 100%;
     border-collapse: collapse;
     margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.4;
 
     th, td {
-      padding: 6px 10px;
-      border: 1px solid var(--primary-low);
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--primary-low);
       vertical-align: top;
       text-align: left;
     }
-    th { background: var(--primary-very-low); font-weight: 600; }
-    td.field-label { width: 30%; color: var(--primary-medium); }
-    td.field-value { white-space: pre-wrap; word-break: break-word; }
+    th {
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--primary-medium);
+      border-bottom-color: var(--primary-medium);
+      background: none;
+    }
+    td.field-label {
+      width: 28%;
+      color: var(--primary-medium);
+      white-space: nowrap;
+    }
+    td.field-value {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
   }
 }
 
