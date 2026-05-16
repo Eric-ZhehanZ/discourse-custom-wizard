@@ -944,27 +944,20 @@ $error: #ef1700;
   .action-list { padding-left: 18px; margin: 0 0 12px; }
   .action-list li { margin: 2px 0; }
 
-  .wizard-submission-table,
-  .wizard-submission-table th,
-  .wizard-submission-table td {
-    all: revert;
-    text-align: left;
-    vertical-align: baseline;
-  }
   .wizard-submission-table {
+    width: 100%;
     border-collapse: collapse;
     margin: 0 0 12px;
-  }
-  .wizard-submission-table th,
-  .wizard-submission-table td {
-    padding: 2px 8px 2px 0;
-    border: 0;
-    background: none;
-    font-weight: normal;
-    line-height: 1.5;
-  }
-  .wizard-submission-table th {
-    font-weight: 600;
+
+    th, td {
+      padding: 6px 10px;
+      border: 1px solid var(--primary-low);
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: var(--primary-very-low); font-weight: 600; }
+    td.field-label { width: 30%; color: var(--primary-medium); }
+    td.field-value { white-space: pre-wrap; word-break: break-word; }
   }
 }
 

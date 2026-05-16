@@ -117,18 +117,7 @@ export default class ReviewableCustomWizardSubmission extends Component {
               {{#each this.fields as |field|}}
                 <tr>
                   <td class="field-label">{{field.label}}</td>
-                  <td class="field-value">
-                    {{#if (eq field.type "upload")}}
-                      <a
-                        class="wizard-upload-link"
-                        href={{field.upload.url}}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >{{field.upload.filename}}</a>
-                    {{else}}
-                      {{field.value}}
-                    {{/if}}
-                  </td>
+                  <td class="field-value">{{#if (eq field.type "upload")}}<a class="wizard-upload-link" href={{field.upload.url}} target="_blank" rel="noopener noreferrer">{{field.upload.filename}}</a>{{else}}{{field.value}}{{/if}}</td>
                 </tr>
               {{/each}}
             </tbody>
