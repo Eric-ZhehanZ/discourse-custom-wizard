@@ -12,7 +12,19 @@ export default Route.extend({
     const wizard = getCachedWizard();
     this.set("wizard", wizard);
 
-    if (!wizard || !wizard.permitted || wizard.completed) {
+    if (!wizard || !wizard.permitted) {
+      this.router.replaceWith("customWizard");
+      return;
+    }
+
+    // An "approved" wizard whose submission was marked submitted_at is
+    // technically `completed`, but the user just clicked
+    // "Update my information again" — bouncing them back to the
+    // status page would look like a stray refresh. Allow the form to
+    // render whenever the wizard is in a review state, regardless of
+    // the completion marker.
+    const inReview = wizard.review_state && wizard.review_state !== "none";
+    if (wizard.completed && !inReview) {
       this.router.replaceWith("customWizard");
     }
   },
