@@ -21,12 +21,22 @@ module CustomWizardUsersController
   # from loading for delayed-approval users; this is the API-level defence
   # in depth for a crafted PUT request.
   def update
-    if current_user && !current_user.staff? &&
-         current_user.custom_fields["delayed_approval_wizard_id"].present?
+    if current_user && !current_user.staff? && wizard_locked_out?
       raise Discourse::InvalidAccess.new(
-              "delayed-approval users cannot update their profile until the wizard is complete",
+              "users in wizard lockout cannot update their profile until the wizard is complete",
             )
     end
     super
+  end
+
+  private
+
+  def wizard_locked_out?
+    return true if current_user.custom_fields["delayed_approval_wizard_id"].present?
+
+    wid = current_user.custom_fields["redirect_to_wizard"]
+    return false if wid.blank?
+    return false if current_user.custom_fields["wizard_approved_#{wid}"]
+    CustomWizard::Template.restrict_to_approved_ids.include?(wid)
   end
 end

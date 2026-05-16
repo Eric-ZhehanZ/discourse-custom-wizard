@@ -47,17 +47,28 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
     }
   end
 
+  IMAGE_EXTENSIONS = %w[jpg jpeg png gif webp svg bmp].freeze
+
   # Resolve field IDs to the labels that were configured on the wizard at
   # serialization time. We don't snapshot labels into the payload so a
   # later wizard rename is reflected, but we fall back to the raw id if
-  # the field has since been removed.
+  # the field has since been removed. Upload-type values get classified
+  # so the client can render thumbnails instead of a raw JSON blob.
   def enriched_fields
     fields_payload = object.payload&.dig("submission_fields") || {}
     field_map = build_field_label_map
 
     fields_payload.filter_map do |key, value|
       next if SKIP_FIELD_KEYS.include?(key.to_s)
-      { id: key.to_s, label: field_map[key.to_s] || key.to_s, value: stringify(value) }
+
+      type, display, upload = classify(value)
+      {
+        id: key.to_s,
+        label: field_map[key.to_s] || key.to_s,
+        type: type,
+        value: display,
+        upload: upload,
+      }
     end
   end
 
@@ -99,5 +110,23 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
     else
       value.to_s
     end
+  end
+
+  def classify(value)
+    if value.is_a?(Hash) && value["url"].is_a?(String) && (value["extension"] || value["width"])
+      ext = value["extension"].to_s.downcase
+      filename = value["original_filename"].presence || value["url"]
+      upload = {
+        url: value["url"],
+        filename: filename,
+        width: value["width"],
+        height: value["height"],
+        human_filesize: value["human_filesize"],
+      }
+      type = IMAGE_EXTENSIONS.include?(ext) ? "image" : "upload"
+      return [type, filename, upload]
+    end
+
+    ["text", stringify(value), nil]
   end
 end

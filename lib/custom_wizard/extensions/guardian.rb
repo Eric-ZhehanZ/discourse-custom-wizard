@@ -50,23 +50,45 @@ module CustomWizardGuardian
     @user.custom_fields["delayed_approval_wizard_id"].present?
   end
 
+  # The new restrict_to_approved gating: same scope of content denial as
+  # delayed-approval, but driven by the per-wizard review queue rather
+  # than the Discourse user-approval flow. A user is "held" when they
+  # have an active redirect_to_wizard pointing at a restrict_to_approved
+  # wizard AND they haven't yet been approved for it (first-time signup
+  # or denied resubmission). Already-approved users with pending update
+  # reviews keep full access — they're not held.
+  def in_pending_review_window?
+    return false if @user.blank?
+    return false if @user.try(:staff?)
+
+    wid = @user.custom_fields["redirect_to_wizard"]
+    return false if wid.blank?
+    return false if @user.custom_fields["wizard_approved_#{wid}"]
+
+    CustomWizard::Template.restrict_to_approved_ids.include?(wid)
+  end
+
+  def in_wizard_lockout?
+    in_delayed_approval_window? || in_pending_review_window?
+  end
+
   def can_see_topic?(topic, hide_deleted = true)
-    return false if in_delayed_approval_window?
+    return false if in_wizard_lockout?
     super
   end
 
   def can_see_post?(post)
-    return false if in_delayed_approval_window?
+    return false if in_wizard_lockout?
     super
   end
 
   def can_create_post?(parent)
-    return false if in_delayed_approval_window?
+    return false if in_wizard_lockout?
     super
   end
 
   def can_send_private_message?(target, notify_moderators: false)
-    return false if in_delayed_approval_window?
+    return false if in_wizard_lockout?
     super
   end
 end

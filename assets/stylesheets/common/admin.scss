@@ -960,3 +960,24 @@ $error: #ef1700;
     td.field-value { white-space: pre-wrap; word-break: break-word; }
   }
 }
+
+.custom-wizard-submission-review {
+  .wizard-upload-preview {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--primary-low);
+    display: block;
+    background: var(--secondary);
+  }
+  .wizard-upload-thumb {
+    display: inline-block;
+    line-height: 0;
+    cursor: zoom-in;
+  }
+  .wizard-upload-link {
+    font-family: monospace;
+    word-break: break-all;
+  }
+}
