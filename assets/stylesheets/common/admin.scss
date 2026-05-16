@@ -944,36 +944,27 @@ $error: #ef1700;
   .action-list { padding-left: 18px; margin: 0 0 12px; }
   .action-list li { margin: 2px 0; }
 
+  .wizard-submission-table,
+  .wizard-submission-table th,
+  .wizard-submission-table td {
+    all: revert;
+    text-align: left;
+    vertical-align: baseline;
+  }
   .wizard-submission-table {
-    width: 100%;
     border-collapse: collapse;
     margin: 0 0 12px;
-    font-size: 13px;
-    line-height: 1.4;
-
-    th, td {
-      padding: 4px 6px;
-      border-bottom: 1px solid var(--primary-low);
-      vertical-align: top;
-      text-align: left;
-    }
-    th {
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      color: var(--primary-medium);
-      border-bottom-color: var(--primary-medium);
-      background: none;
-    }
-    td.field-label {
-      width: 28%;
-      color: var(--primary-medium);
-      white-space: nowrap;
-    }
-    td.field-value {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+  }
+  .wizard-submission-table th,
+  .wizard-submission-table td {
+    padding: 2px 8px 2px 0;
+    border: 0;
+    background: none;
+    font-weight: normal;
+    line-height: 1.5;
+  }
+  .wizard-submission-table th {
+    font-weight: 600;
   }
 }
 
