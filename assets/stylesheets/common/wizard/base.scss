@@ -80,44 +80,13 @@ body.custom-wizard {
   }
 }
 
-.wizard-status {
-  max-width: 540px;
-  margin: 0 auto;
-  padding: 24px 0;
-
-  &__title {
-    margin: 0 0 12px;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--primary);
-  }
-  &__body {
-    margin: 0 0 16px;
-    line-height: 1.55;
-    color: var(--primary-medium);
-  }
-  &__reason {
-    padding: 10px 12px;
-    margin: 0 0 16px;
-    background: var(--primary-very-low);
-    border-left: 3px solid var(--love);
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  &__primary {
-    margin: 16px 0 0;
-  }
-  &__secondary {
-    margin-top: 24px;
-    text-align: center;
-  }
-  &__secondary-link {
-    cursor: pointer;
-    color: var(--primary-medium);
-    text-decoration: underline;
-    font-size: 13px;
-  }
-  &--denied .wizard-status__secondary-link {
-    color: var(--love);
-  }
+.wizard-status__reason {
+  padding: 10px 12px;
+  background: var(--primary-very-low);
+  border-left: 3px solid var(--love);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.wizard-status__danger {
+  color: var(--love);
 }

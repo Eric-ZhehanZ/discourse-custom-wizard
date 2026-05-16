@@ -6,16 +6,18 @@ import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
-import { eq } from "discourse/truth-helpers";
 import { i18n } from "discourse-i18n";
 
-// Single user-facing status page for the wizard. Replaces the old
-// noAccess "pending review" / "recently approved" screens with a
-// four-state layout (approved / pending-first-time / pending-update /
-// denied) that mirrors the wizard form's chrome (primary button in the
-// same place as Next, secondary link where the progress bar sits).
+// User-facing wizard status page. Uses the exact same DOM structure as
+// custom-wizard-step.hbs so it inherits the wizard's existing layout
+// (title position, content block, divider + footer with right-aligned
+// buttons). No bespoke styling.
 //
-// Args: @wizard, @wizardId, @routeTo
+// State matrix:
+//   approved              → "Continue" / "Update my information again"
+//   pending, first-time   → no primary / "Refresh status"
+//   pending, re-verify    → "Continue to site" / "Refresh status"
+//   denied                → "Resubmit" / "Give up and deactivate"
 export default class CustomWizardStatus extends Component {
   @service router;
   @tracked submitting = false;
@@ -23,38 +25,27 @@ export default class CustomWizardStatus extends Component {
   get state() {
     return this.args.wizard?.review_state || "none";
   }
-
   get isApproved() {
     return this.state === "approved";
   }
-
   get isPending() {
     return this.state === "pending";
   }
-
   get isDenied() {
     return this.state === "denied";
   }
-
   get previouslyApproved() {
     return !!this.args.wizard?.previously_approved;
   }
-
-  // First-time pending (held): the user has never had an approved
-  // submission for this wizard, so they're blocked from the rest of
-  // the forum until this review lands.
   get isPendingFirstTime() {
     return this.isPending && !this.previouslyApproved;
   }
-
   get rejectionReason() {
     return this.args.wizard?.rejection_reason;
   }
-
   get canDeactivate() {
     return !!this.args.wizard?.can_deactivate;
   }
-
   get destinationUrl() {
     return this.args.wizard?.redirect_back_url || "/";
   }
@@ -65,28 +56,28 @@ export default class CustomWizardStatus extends Component {
     if (this.isPendingFirstTime) return "wizard.status.pending_first.title";
     return "wizard.status.pending_update.title";
   }
-
   get bodyKey() {
     if (this.isApproved) return "wizard.status.approved.body";
     if (this.isDenied) return "wizard.status.denied.body";
     if (this.isPendingFirstTime) return "wizard.status.pending_first.body";
     return "wizard.status.pending_update.body";
   }
-
   get primaryLabelKey() {
     if (this.isApproved) return "wizard.status.approved.primary";
     if (this.isDenied) return "wizard.status.denied.primary";
-    if (!this.isPendingFirstTime && this.isPending)
+    if (this.isPending && !this.isPendingFirstTime)
       return "wizard.status.pending_update.primary";
     return null;
   }
-
   get secondaryLabelKey() {
     if (this.isApproved) return "wizard.status.approved.secondary";
     if (this.isDenied && this.canDeactivate)
       return "wizard.status.denied.secondary";
     if (this.isPending) return "wizard.status.pending.refresh";
     return null;
+  }
+  get secondaryIsDangerous() {
+    return this.isDenied;
   }
 
   @action
@@ -138,40 +129,42 @@ export default class CustomWizardStatus extends Component {
   }
 
   <template>
-    <div class="wizard-status wizard-status--{{this.state}}">
-      <div class="wizard-status__content">
-        <h1 class="wizard-status__title">{{i18n this.titleKey}}</h1>
-        <p class="wizard-status__body">{{i18n this.bodyKey}}</p>
-        {{#if (eq this.state "denied")}}
-          {{#if this.rejectionReason}}
-            <p class="wizard-status__reason">{{this.rejectionReason}}</p>
-          {{/if}}
+    <div class="wizard-step-contents">
+      <h1 class="wizard-step-title">{{i18n this.titleKey}}</h1>
+      <div class="wizard-step-description">{{i18n this.bodyKey}}</div>
+      {{#if this.rejectionReason}}
+        <div class="wizard-step-description wizard-status__reason">
+          {{this.rejectionReason}}
+        </div>
+      {{/if}}
+    </div>
+
+    <div class="wizard-step-footer">
+      <div class="wizard-buttons">
+        {{#if this.secondaryLabelKey}}
+          <a
+            href
+            role="button"
+            class="action-link{{if
+                this.secondaryIsDangerous
+                ' wizard-status__danger'
+              }}"
+            {{on "click" this.secondary}}
+          >{{i18n this.secondaryLabelKey}}</a>
         {{/if}}
 
         {{#if this.primaryLabelKey}}
-          <div class="wizard-status__primary">
-            <button
-              type="button"
-              class="wizard-btn next primary"
-              disabled={{this.submitting}}
-              {{on "click" this.primary}}
-            >
-              {{i18n this.primaryLabelKey}}
-              {{dIcon "chevron-right"}}
-            </button>
-          </div>
+          <button
+            type="button"
+            class="wizard-btn next primary"
+            disabled={{this.submitting}}
+            {{on "click" this.primary}}
+          >
+            {{i18n this.primaryLabelKey}}
+            {{dIcon "chevron-right"}}
+          </button>
         {{/if}}
       </div>
-
-      {{#if this.secondaryLabelKey}}
-        <div class="wizard-status__secondary">
-          <a
-            role="button"
-            class="wizard-status__secondary-link"
-            {{on "click" this.secondary}}
-          >{{i18n this.secondaryLabelKey}}</a>
-        </div>
-      {{/if}}
     </div>
   </template>
 }
