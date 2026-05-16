@@ -114,7 +114,7 @@ class ReviewableCustomWizardSubmission < Reviewable
     fresh.save_custom_fields
   end
 
-  def notify_user(state:, performer:, reason: nil)
+  def notify_user(state:, performer: nil, reason: nil)
     return unless review_user
 
     message_type =
@@ -127,7 +127,6 @@ class ReviewableCustomWizardSubmission < Reviewable
       wizard_name: wizard_name,
       wizard_id: wizard_id,
       wizard_url: "/w/#{wizard_id}",
-      reviewer: performer&.username || Discourse.system_user.username,
       reason: reason_text || I18n.t("system_messages.custom_wizard_review_denied.no_reason"),
     )
   rescue StandardError => e

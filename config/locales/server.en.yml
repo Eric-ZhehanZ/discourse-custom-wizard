@@ -20,7 +20,7 @@ en:
       text_body_template: |
         Hi %{username},
 
-        Your submission for **%{wizard_name}** has been approved by **%{reviewer}**.
+        Your submission for **%{wizard_name}** has been approved.
 
         Your account now reflects the submitted information and full access has been restored.
 
@@ -34,8 +34,7 @@ en:
 
         Your submission for **%{wizard_name}** was not approved.
 
-        Reviewer: **%{reviewer}**
-        Reason: %{reason}
+        %{reason}
 
         Please [resubmit the form](%{wizard_url}) to continue.
 

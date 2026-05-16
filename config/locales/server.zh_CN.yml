@@ -20,7 +20,7 @@ zh_CN:
       text_body_template: |
         您好 %{username}，
 
-        您提交的 **%{wizard_name}** 已由 **%{reviewer}** 批准。
+        您提交的 **%{wizard_name}** 已通过审核。
 
         您的账户已应用所提交的信息，访问权限已恢复正常。
 
@@ -34,8 +34,7 @@ zh_CN:
 
         您提交的 **%{wizard_name}** 未通过审核。
 
-        审核人：**%{reviewer}**
-        原因：%{reason}
+        %{reason}
 
         请[重新提交此表单](%{wizard_url})以继续。
 
