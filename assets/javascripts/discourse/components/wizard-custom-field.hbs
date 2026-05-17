@@ -171,7 +171,7 @@
 {{#if this.isNumber}}
   <div class="setting">
     <div class="setting-label">
-      <label>{{i18n "admin.wizard.field.min"}}</label>
+      <label>{{i18n "admin.wizard.field.min.label"}}</label>
     </div>
 
     <div class="setting-value">
@@ -186,7 +186,7 @@
 
   <div class="setting">
     <div class="setting-label">
-      <label>{{i18n "admin.wizard.field.max"}}</label>
+      <label>{{i18n "admin.wizard.field.max.label"}}</label>
     </div>
 
     <div class="setting-value">
@@ -195,6 +195,38 @@
         name="max"
         @value={{this.field.max}}
         class="small"
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.min_digits"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        name="min_length"
+        @value={{this.field.min_length}}
+        class="small"
+        placeholder={{i18n "admin.wizard.field.min_digits_placeholder"}}
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.max_digits"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        name="max_length"
+        @value={{this.field.max_length}}
+        class="small"
+        placeholder={{i18n "admin.wizard.field.max_digits_placeholder"}}
       />
     </div>
   </div>

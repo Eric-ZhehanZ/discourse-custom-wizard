@@ -390,6 +390,10 @@ zh_CN:
             label: "最小值"
           max:
             label: "最大值"
+          min_digits: "最少位数"
+          min_digits_placeholder: "最少字符数"
+          max_digits: "最多位数"
+          max_digits_placeholder: "最多字符数"
           step:
             label: "步长"
             placeholder: "任意"

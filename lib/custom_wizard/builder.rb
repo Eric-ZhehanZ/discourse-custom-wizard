@@ -145,6 +145,8 @@ class CustomWizard::Builder
       params[:min] = field_template["min"] if field_template["min"].present?
       params[:max] = field_template["max"] if field_template["max"].present?
       params[:step] = field_template["step"] if field_template["step"].present?
+      params[:min_length] = field_template["min_length"] if field_template["min_length"].present?
+      params[:max_length] = field_template["max_length"] if field_template["max_length"].present?
     end
 
     if %w[text textarea url].include?(field_template["type"])

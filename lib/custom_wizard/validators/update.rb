@@ -162,7 +162,10 @@ class ::CustomWizard::UpdateValidator
   end
 
   def is_text_type(field)
-    %w[text textarea composer].include? field.type
+    # number is included so the digit-count UI (min_length / max_length
+    # surfaced under "Min/Max digits" for number fields) shares the
+    # same length-of-string check used by the text family.
+    %w[text textarea composer number].include? field.type
   end
 
   def is_url_type(field)

@@ -387,9 +387,13 @@ en:
             placeholder: "Use letters and numbers only."
             instructions: "Shown when the value does not match the regex. Falls back to a generic message."
           min:
-            label: "Min"
+            label: "Min value"
           max:
-            label: "Max"
+            label: "Max value"
+          min_digits: "Min digits"
+          min_digits_placeholder: "Minimum number of characters"
+          max_digits: "Max digits"
+          max_digits_placeholder: "Maximum number of characters"
           step:
             label: "Step"
             placeholder: "any"

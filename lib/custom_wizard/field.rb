@@ -132,6 +132,8 @@ class CustomWizard::Field
         placeholder: nil,
         min: nil,
         max: nil,
+        min_length: nil,
+        max_length: nil,
         step: nil,
       },
       checkbox: {
