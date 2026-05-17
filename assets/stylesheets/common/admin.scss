@@ -971,6 +971,14 @@ $error: #ef1700;
       white-space: pre-wrap;
       word-break: break-word;
     }
+    // When the Before column is hidden (no prior values to compare),
+    // let the After column claim that space so the table doesn't have
+    // a wide empty gutter.
+    &.without-before {
+      .col-after, td.field-after {
+        width: auto;
+      }
+    }
     // Subtle muting on rows where submitted == current — the reviewer
     // can scan changed rows at a glance.
     tr.is-unchanged td.field-before,

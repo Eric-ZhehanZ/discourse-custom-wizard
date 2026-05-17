@@ -31,6 +31,14 @@ export default class ReviewableCustomWizardSubmission extends Component {
     return this.args.reviewable?.enriched_fields || [];
   }
 
+  // Hide the entire Current value column when nothing in this
+  // submission has a stored "before" value — common for first-time
+  // submissions where the user has no prior profile data, where the
+  // empty column otherwise eats horizontal space for nothing.
+  get hasOriginalValues() {
+    return this.fields.some((f) => f.original_value);
+  }
+
   get actions() {
     return (this.args.reviewable?.enriched_actions || []).map((a) => {
       const type = a.type || "";
@@ -106,11 +114,13 @@ export default class ReviewableCustomWizardSubmission extends Component {
       {{#if this.fields.length}}
         <div class="wizard-submission-fields">
           <h4>{{i18n "admin.wizard.review.fields_heading"}}</h4>
-          <table class="wizard-submission-table">
+          <table class="wizard-submission-table{{unless this.hasOriginalValues ' without-before'}}">
             <thead>
               <tr>
                 <th class="col-field">{{i18n "admin.wizard.review.column_field"}}</th>
-                <th class="col-before">{{i18n "admin.wizard.review.column_before"}}</th>
+                {{#if this.hasOriginalValues}}
+                  <th class="col-before">{{i18n "admin.wizard.review.column_before"}}</th>
+                {{/if}}
                 <th class="col-after">{{i18n "admin.wizard.review.column_after"}}</th>
               </tr>
             </thead>
@@ -118,7 +128,9 @@ export default class ReviewableCustomWizardSubmission extends Component {
               {{#each this.fields as |field|}}
                 <tr class={{if field.unchanged "is-unchanged"}}>
                   <td class="field-label">{{field.label}}</td>
-                  <td class="field-before">{{field.original_value}}</td>
+                  {{#if this.hasOriginalValues}}
+                    <td class="field-before">{{field.original_value}}</td>
+                  {{/if}}
                   <td class="field-after">{{#if (eq field.type "upload")}}<a class="wizard-upload-link" href={{field.upload.url}} target="_blank" rel="noopener noreferrer">{{field.upload.filename}}</a>{{else}}{{field.value}}{{/if}}</td>
                 </tr>
               {{/each}}
