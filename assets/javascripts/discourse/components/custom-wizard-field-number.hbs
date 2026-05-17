@@ -1,8 +1,11 @@
 <Input
   id={{this.field.id}}
-  step="0.01"
+  min={{this.field.min}}
+  max={{this.field.max}}
+  step={{this.field.step_size}}
   @type="number"
   @value={{this.field.value}}
   tabindex={{this.field.tabindex}}
   class={{this.fieldClass}}
+  placeholder={{this.field.translatedPlaceholder}}
 />

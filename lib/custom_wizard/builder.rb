@@ -141,6 +141,19 @@ class CustomWizard::Builder
       params[:format] = field_template["format"]
     end
 
+    if field_template["type"] === "number"
+      params[:min] = field_template["min"] if field_template["min"].present?
+      params[:max] = field_template["max"] if field_template["max"].present?
+      params[:step] = field_template["step"] if field_template["step"].present?
+    end
+
+    if %w[text textarea url].include?(field_template["type"])
+      params[:regex] = field_template["regex"] if field_template["regex"].present?
+      if field_template["regex_message"].present?
+        params[:regex_message] = field_template["regex_message"]
+      end
+    end
+
     if %w[category tag topic].include?(field_template["type"])
       params[:limit] = field_template["limit"]
     end

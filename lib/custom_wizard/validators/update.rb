@@ -50,6 +50,38 @@ class ::CustomWizard::UpdateValidator
       @updater.errors.add(field_id, I18n.t("wizard.field.not_url", label: label))
     end
 
+    if field.regex.present? && value.is_a?(String) && value.strip.length > 0
+      begin
+        unless Regexp.new(field.regex.to_s).match?(value)
+          msg =
+            (field.regex_message.presence ||
+              I18n.t("wizard.field.regex_mismatch", label: label))
+          @updater.errors.add(field_id, msg)
+        end
+      rescue RegexpError
+        # invalid pattern from admin — skip silently rather than
+        # blocking submission with a confusing user-facing error
+      end
+    end
+
+    if type == "number" && value.present?
+      numeric_value = Float(value, exception: false)
+      if numeric_value
+        if field.min.present? && numeric_value < field.min.to_f
+          @updater.errors.add(
+            field_id,
+            I18n.t("wizard.field.below_min", label: label, min: field.min),
+          )
+        end
+        if field.max.present? && numeric_value > field.max.to_f
+          @updater.errors.add(
+            field_id,
+            I18n.t("wizard.field.above_max", label: label, max: field.max),
+          )
+        end
+      end
+    end
+
     @updater.submission[field_id] = standardise_boolean(value) if type === "checkbox"
 
     if type === "upload" && value.present? && !validate_file_type(value, file_types)

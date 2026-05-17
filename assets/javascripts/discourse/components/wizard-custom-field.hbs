@@ -112,7 +112,9 @@
       <Input @type="checkbox" @checked={{this.field.char_counter}} />
     </div>
   </div>
+{{/if}}
 
+{{#if this.hasPlaceholder}}
   <div class="setting full">
     <div class="setting-label">
       <label>{{i18n "admin.wizard.field.field_placeholder"}}</label>
@@ -124,6 +126,95 @@
         class="medium"
         @value={{this.field.placeholder}}
       />
+    </div>
+  </div>
+{{/if}}
+
+{{#if this.isRegexable}}
+  <div class="setting full">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.regex.label"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        name="regex"
+        @value={{this.field.regex}}
+        class="medium"
+        placeholder={{i18n "admin.wizard.field.regex.placeholder"}}
+      />
+      <label class="instructions">
+        {{i18n "admin.wizard.field.regex.instructions"}}
+      </label>
+    </div>
+  </div>
+
+  <div class="setting full">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.regex_message.label"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        name="regex_message"
+        @value={{this.field.regex_message}}
+        class="medium"
+        placeholder={{i18n "admin.wizard.field.regex_message.placeholder"}}
+      />
+      <label class="instructions">
+        {{i18n "admin.wizard.field.regex_message.instructions"}}
+      </label>
+    </div>
+  </div>
+{{/if}}
+
+{{#if this.isNumber}}
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.min"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        name="min"
+        @value={{this.field.min}}
+        class="small"
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.max"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        name="max"
+        @value={{this.field.max}}
+        class="small"
+      />
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-label">
+      <label>{{i18n "admin.wizard.field.step.label"}}</label>
+    </div>
+
+    <div class="setting-value">
+      <Input
+        @type="number"
+        name="step"
+        @value={{this.field.step}}
+        class="small"
+        placeholder={{i18n "admin.wizard.field.step.placeholder"}}
+      />
+      <label class="instructions">
+        {{i18n "admin.wizard.field.step.instructions"}}
+      </label>
     </div>
   </div>
 {{/if}}

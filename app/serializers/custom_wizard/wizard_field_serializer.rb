@@ -25,7 +25,12 @@ class CustomWizard::FieldSerializer < ::ApplicationSerializer
              :validations,
              :max_length,
              :char_counter,
-             :preview_template
+             :preview_template,
+             :regex,
+             :regex_message,
+             :min,
+             :max,
+             :step_size
 
   def id
     object.id

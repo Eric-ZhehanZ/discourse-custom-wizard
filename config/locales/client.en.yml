@@ -378,6 +378,22 @@ en:
           date_time_format:
             label: "Format"
             instructions: "<a href='https://momentjs.com/docs/#/displaying/format/' target='_blank'>Moment.js format</a>"
+          regex:
+            label: "Regex"
+            placeholder: "^[A-Za-z0-9]+$"
+            instructions: "Regular expression the value must match. Leave empty to disable."
+          regex_message:
+            label: "Regex error message"
+            placeholder: "Use letters and numbers only."
+            instructions: "Shown when the value does not match the regex. Falls back to a generic message."
+          min:
+            label: "Min"
+          max:
+            label: "Max"
+          step:
+            label: "Step"
+            placeholder: "any"
+            instructions: "Granularity for accepted values. Leave empty for any."
           validations:
             header: "Validations"
             enabled: "Enabled"

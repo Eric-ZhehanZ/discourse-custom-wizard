@@ -28,7 +28,12 @@ class CustomWizard::Field
               :category,
               :can_create_tag,
               :preview_template,
-              :placeholder
+              :placeholder,
+              :regex,
+              :regex_message,
+              :min,
+              :max,
+              :step_size
 
   attr_accessor :index, :step
 
@@ -61,6 +66,13 @@ class CustomWizard::Field
     @can_create_tag = attrs[:can_create_tag]
     @preview_template = attrs[:preview_template]
     @placeholder = attrs[:placeholder]
+    @regex = attrs[:regex]
+    @regex_message = attrs[:regex_message]
+    @min = attrs[:min]
+    @max = attrs[:max]
+    # `step` shadows the wizard's Step accessor; expose it as
+    # `step_size` to the rest of the plugin.
+    @step_size = attrs[:step]
   end
 
   def label
@@ -80,6 +92,8 @@ class CustomWizard::Field
         char_counter: nil,
         validations: nil,
         placeholder: nil,
+        regex: nil,
+        regex_message: nil,
       },
       textarea: {
         min_length: nil,
@@ -87,6 +101,8 @@ class CustomWizard::Field
         prefill: nil,
         char_counter: nil,
         placeholder: nil,
+        regex: nil,
+        regex_message: nil,
       },
       composer: {
         min_length: nil,
@@ -101,19 +117,32 @@ class CustomWizard::Field
       },
       date: {
         format: "YYYY-MM-DD",
+        prefill: nil,
       },
       time: {
         format: "HH:mm",
+        prefill: nil,
       },
       date_time: {
         format: "",
+        prefill: nil,
       },
       number: {
+        prefill: nil,
+        placeholder: nil,
+        min: nil,
+        max: nil,
+        step: nil,
       },
       checkbox: {
+        prefill: nil,
       },
       url: {
         min_length: nil,
+        prefill: nil,
+        placeholder: nil,
+        regex: nil,
+        regex_message: nil,
       },
       upload: {
         file_types: ".jpg,.jpeg,.png",

@@ -36,6 +36,21 @@ body.custom-wizard {
     }
   }
 
+  // Strip the native number-input spinner. The widget is inconsistent
+  // across browsers (FF shows a slim gutter, Chrome shows up/down
+  // chevrons) and confuses the field width — admins set min/max/step
+  // explicitly, no point in letting the browser nudge the value.
+  .wizard-field .input-area input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
   textarea {
     height: auto;
     padding: 0.55em 0.75em;

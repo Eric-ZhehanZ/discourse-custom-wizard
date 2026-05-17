@@ -25,13 +25,27 @@ export default Component.extend(UndoChanges, {
   isTextarea: equal("field.type", "textarea"),
   isUrl: equal("field.type", "url"),
   isComposer: equal("field.type", "composer"),
+  isNumber: equal("field.type", "number"),
+  isCheckbox: equal("field.type", "checkbox"),
+  isDate: equal("field.type", "date"),
+  isTime: equal("field.type", "time"),
+  isFullDateTime: equal("field.type", "date_time"),
+  isRegexable: or("isText", "isTextarea", "isUrl"),
+  hasPlaceholder: or("isText", "isTextarea", "isComposer", "isUrl", "isNumber"),
   showPrefill: or(
     "isText",
+    "isTextarea",
     "isCategory",
     "isTag",
     "isGroup",
     "isDropdown",
-    "isTopic"
+    "isTopic",
+    "isUrl",
+    "isNumber",
+    "isCheckbox",
+    "isDate",
+    "isTime",
+    "isFullDateTime"
   ),
   showContent: or("isCategory", "isTag", "isGroup", "isDropdown", "isTopic"),
   contentSourceIsMapper: computed("field.content_source", function () {

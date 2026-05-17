@@ -378,6 +378,22 @@ zh_CN:
           date_time_format:
             label: "格式"
             instructions: "<a href='https://momentjs.com/docs/#/displaying/format/' target='_blank'>Moment.js 格式</a>"
+          regex:
+            label: "正则表达式"
+            placeholder: "^[A-Za-z0-9]+$"
+            instructions: "值必须匹配的正则表达式。留空则不启用。"
+          regex_message:
+            label: "正则错误提示"
+            placeholder: "请仅使用字母和数字。"
+            instructions: "当值不匹配正则时显示。留空则使用通用提示。"
+          min:
+            label: "最小值"
+          max:
+            label: "最大值"
+          step:
+            label: "步长"
+            placeholder: "任意"
+            instructions: "允许值的最小间隔。留空表示任意。"
           validations:
             header: "验证"
             enabled: "启用"

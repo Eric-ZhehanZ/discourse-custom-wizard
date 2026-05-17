@@ -62,6 +62,9 @@ zh_CN:
       file_too_large: "%{label}不能超过 %{max_kb} KB"
       invalid_date: "无效的日期"
       invalid_time: "无效的时间"
+      regex_mismatch: "%{label}的格式不正确。"
+      below_min: "%{label}不能小于 %{min}。"
+      above_max: "%{label}不能大于 %{max}。"
 
     none: "我们未能在该地址找到向导。"
     no_skip: "向导不能被跳过"

@@ -62,6 +62,9 @@ en:
       file_too_large: "%{label} must be no larger than %{max_kb} KB"
       invalid_date: "Invalid date"
       invalid_time: "Invalid time"
+      regex_mismatch: "%{label} is not in the expected format."
+      below_min: "%{label} must be at least %{min}."
+      above_max: "%{label} must be at most %{max}."
 
     none: "We couldn't find a wizard at that address."
     no_skip: "Wizard can't be skipped"
