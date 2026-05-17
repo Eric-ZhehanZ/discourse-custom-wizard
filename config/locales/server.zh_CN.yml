@@ -40,6 +40,7 @@ zh_CN:
 
   wizard:
     custom_title: "向导"
+    self_suspension_reason: "用户主动放弃了必填向导。如需恢复账户访问，请在管理后台用户页面解除停用。"
 
     custom_field:
       error:

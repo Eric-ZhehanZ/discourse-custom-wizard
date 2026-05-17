@@ -44,14 +44,24 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
     render json: result
   end
 
-  # Self-deactivation for users who give up on a denied wizard. Drops
-  # them to inactive so they can't log back in until an admin
-  # reactivates the account.
+  # Self-suspension for users who give up on a denied wizard. We use
+  # Discourse's UserSuspender directly rather than the User::Suspend
+  # service because the latter goes through a Guardian that disallows
+  # users suspending themselves. The suspension is effectively a
+  # permanent ban — staff can unsuspend through the standard admin UI
+  # to reverse it. Staff are blocked from triggering this on themselves
+  # so a moderator can't accidentally lock out the queue handler.
   def deactivate
     raise Discourse::InvalidAccess.new unless current_user
     raise Discourse::InvalidAccess.new if current_user.staff?
 
-    current_user.deactivate(Discourse.system_user)
+    UserSuspender.new(
+      current_user,
+      suspended_till: 1000.years.from_now,
+      reason: I18n.t("wizard.self_suspension_reason"),
+      by_user: Discourse.system_user,
+    ).suspend
+
     log_off_user
     render json: { success: true, redirect_to: "/" }
   end

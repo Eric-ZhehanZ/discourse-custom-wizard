@@ -26,9 +26,20 @@ import {
 export default class CustomWizardStatus extends Component {
   @service router;
   @tracked submitting = false;
+  // EmberObject mutations don't propagate through Glimmer's `@tracked`
+  // reactivity, so we keep a local @tracked copy of the wizard JSON
+  // and replace it wholesale on refresh. Reading `this.args.wizard.X`
+  // from getters only re-evaluates when the `args.wizard` reference
+  // itself changes (it doesn't, since args is frozen), but reading
+  // `this._refreshedWizard.X` from a tracked field re-runs the getter
+  // any time we assign a new object to that field.
+  @tracked _refreshedWizard = null;
 
+  get wizard() {
+    return this._refreshedWizard ?? this.args.wizard;
+  }
   get state() {
-    return this.args.wizard?.review_state || "none";
+    return this.wizard?.review_state || "none";
   }
   get isApproved() {
     return this.state === "approved";
@@ -40,19 +51,19 @@ export default class CustomWizardStatus extends Component {
     return this.state === "denied";
   }
   get previouslyApproved() {
-    return !!this.args.wizard?.previously_approved;
+    return !!this.wizard?.previously_approved;
   }
   get isPendingFirstTime() {
     return this.isPending && !this.previouslyApproved;
   }
   get rejectionReason() {
-    return this.args.wizard?.rejection_reason;
+    return this.wizard?.rejection_reason;
   }
   get canDeactivate() {
-    return !!this.args.wizard?.can_deactivate;
+    return !!this.wizard?.can_deactivate;
   }
   get destinationUrl() {
-    return this.args.wizard?.redirect_back_url || "/";
+    return this.wizard?.redirect_back_url || "/";
   }
 
   get titleKey() {
@@ -119,14 +130,16 @@ export default class CustomWizardStatus extends Component {
     }
   }
 
-  // Pull fresh wizard JSON, swap key state fields on the existing
-  // model so the template re-renders in place, and update the shared
-  // wizard cache so other routes see the new state.
+  // Pull fresh wizard JSON, assign it to a tracked field so the entire
+  // template re-renders against the new state, mutate args.wizard so
+  // any sibling components also see the update, and refresh the shared
+  // wizard cache so subsequent route loads start clean.
   async _refreshStatus() {
     if (this.submitting) return;
     this.submitting = true;
     try {
       const fresh = await findCustomWizard(this.args.wizardId);
+      this._refreshedWizard = fresh;
       if (this.args.wizard?.setProperties) {
         this.args.wizard.setProperties({
           review_state: fresh.review_state,
@@ -135,6 +148,7 @@ export default class CustomWizardStatus extends Component {
           must_redo: fresh.must_redo,
           rejection_reason: fresh.rejection_reason,
           redirect_back_url: fresh.redirect_back_url,
+          can_deactivate: fresh.can_deactivate,
         });
       }
       updateCachedWizard(fresh);

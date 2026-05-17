@@ -33,13 +33,15 @@ class ReviewableCustomWizardSubmission < Reviewable
 
   def perform_reject_wizard_submission(performer, args)
     # Persist the reason on the reviewable itself — the WizardSerializer
-    # reads it back when rendering the user-facing denied status page,
-    # so without this write the user only sees the generic body text.
-    self.reject_reason = args[:reject_reason].to_s.strip
-    save(validate: false)
+    # reads it back when rendering the user-facing denied status page.
+    # update_columns bypasses validations AND callbacks, which matters
+    # because Discourse's Reviewable has after_save hooks that can
+    # clobber a pending change made via save(validate: false).
+    reason = args[:reject_reason].to_s.strip
+    update_columns(reject_reason: reason, updated_at: Time.now) if persisted?
 
     mark_user_denied!
-    notify_user(state: :rejected, performer: performer, reason: args[:reject_reason])
+    notify_user(state: :rejected, performer: performer, reason: reason)
     create_result(:success, :rejected)
   end
 

@@ -40,6 +40,7 @@ en:
 
   wizard:
     custom_title: "Wizard"
+    self_suspension_reason: "User opted out of a required wizard. Unsuspend from the admin user page to restore access."
 
     custom_field:
       error:
