@@ -20,6 +20,22 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
     permitted_param_keys
   ].freeze
 
+  # Standard User attributes the wizard's update_profile action can
+  # write to. Used to look up the "before" value when the wizard field
+  # id matches one of them, so the reviewer can compare submitted vs
+  # current side-by-side.
+  USER_ATTR_KEYS = %w[
+    name
+    username
+    email
+    title
+    location
+    website
+    bio_raw
+    date_of_birth
+    locale
+  ].freeze
+
   def wizard_id
     object.wizard_id
   end
@@ -55,16 +71,20 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
   def enriched_fields
     fields_payload = object.payload&.dig("submission_fields") || {}
     field_map = build_field_label_map
+    user = object.created_by || (object.target if object.target.is_a?(User))
 
     fields_payload.filter_map do |key, value|
       next if SKIP_FIELD_KEYS.include?(key.to_s)
 
       type, display, upload = classify(value)
+      original = original_value_for(user, key.to_s)
       {
         id: key.to_s,
         label: field_map[key.to_s] || key.to_s,
         type: type,
         value: display,
+        original_value: original,
+        unchanged: type != "upload" && display.to_s == original.to_s && original.present?,
         upload: upload,
       }
     end
@@ -118,5 +138,22 @@ class ReviewableCustomWizardSubmissionSerializer < ReviewableSerializer
     end
 
     ["text", stringify(value), nil]
+  end
+
+  # Best-effort "before" lookup: try the user's matching custom field
+  # first (this is what update_profile actions typically write to),
+  # then fall back to a standard User attribute when the wizard field
+  # id matches one. Returns "" when there's nothing to compare against.
+  def original_value_for(user, field_id)
+    return "" unless user.is_a?(User) && field_id.present?
+
+    cf = user.custom_fields[field_id]
+    return stringify(cf) if cf.present?
+
+    if USER_ATTR_KEYS.include?(field_id) && user.respond_to?(field_id)
+      return stringify(user.public_send(field_id))
+    end
+
+    ""
   end
 end

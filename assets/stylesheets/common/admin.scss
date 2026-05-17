@@ -948,6 +948,7 @@ $error: #ef1700;
     width: 100%;
     border-collapse: collapse;
     margin: 0 0 12px;
+    table-layout: fixed;
 
     th, td {
       padding: 6px 10px;
@@ -956,12 +957,27 @@ $error: #ef1700;
       text-align: left;
     }
     th { background: var(--primary-very-low); font-weight: 600; }
-    th:first-child, td.field-label {
-      width: 200px;
-      min-width: 160px;
+
+    // Field label takes ~22%, Before / After split the rest evenly so
+    // long values wrap inside the cell instead of stretching the page.
+    .col-field, td.field-label {
+      width: 22%;
+      min-width: 140px;
       color: var(--primary-medium);
     }
-    td.field-value { white-space: pre-wrap; word-break: break-word; }
+    .col-before, td.field-before,
+    .col-after, td.field-after {
+      width: 39%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    // Subtle muting on rows where submitted == current — the reviewer
+    // can scan changed rows at a glance.
+    tr.is-unchanged td.field-before,
+    tr.is-unchanged td.field-after {
+      color: var(--primary-medium);
+      background: var(--primary-very-low);
+    }
   }
 }
 

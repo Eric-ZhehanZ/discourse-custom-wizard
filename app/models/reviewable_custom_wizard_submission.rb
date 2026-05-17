@@ -32,6 +32,12 @@ class ReviewableCustomWizardSubmission < Reviewable
   end
 
   def perform_reject_wizard_submission(performer, args)
+    # Persist the reason on the reviewable itself — the WizardSerializer
+    # reads it back when rendering the user-facing denied status page,
+    # so without this write the user only sees the generic body text.
+    self.reject_reason = args[:reject_reason].to_s.strip
+    save(validate: false)
+
     mark_user_denied!
     notify_user(state: :rejected, performer: performer, reason: args[:reject_reason])
     create_result(:success, :rejected)

@@ -23,6 +23,8 @@ en:
           fields_heading: "Submitted fields"
           column_field: "Field"
           column_value: "Submitted value"
+          column_before: "Current value"
+          column_after: "Submitted value"
           admin_link: "admin"
           unnamed_wizard: "(unnamed wizard)"
           reject_modal:

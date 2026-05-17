@@ -23,6 +23,8 @@ zh_CN:
           fields_heading: "提交字段"
           column_field: "字段"
           column_value: "提交值"
+          column_before: "当前值"
+          column_after: "提交值"
           admin_link: "管理"
           unnamed_wizard: "（未命名的向导）"
           reject_modal:

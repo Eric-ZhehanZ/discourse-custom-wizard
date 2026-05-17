@@ -109,15 +109,17 @@ export default class ReviewableCustomWizardSubmission extends Component {
           <table class="wizard-submission-table">
             <thead>
               <tr>
-                <th>{{i18n "admin.wizard.review.column_field"}}</th>
-                <th>{{i18n "admin.wizard.review.column_value"}}</th>
+                <th class="col-field">{{i18n "admin.wizard.review.column_field"}}</th>
+                <th class="col-before">{{i18n "admin.wizard.review.column_before"}}</th>
+                <th class="col-after">{{i18n "admin.wizard.review.column_after"}}</th>
               </tr>
             </thead>
             <tbody>
               {{#each this.fields as |field|}}
-                <tr>
+                <tr class={{if field.unchanged "is-unchanged"}}>
                   <td class="field-label">{{field.label}}</td>
-                  <td class="field-value">{{#if (eq field.type "upload")}}<a class="wizard-upload-link" href={{field.upload.url}} target="_blank" rel="noopener noreferrer">{{field.upload.filename}}</a>{{else}}{{field.value}}{{/if}}</td>
+                  <td class="field-before">{{field.original_value}}</td>
+                  <td class="field-after">{{#if (eq field.type "upload")}}<a class="wizard-upload-link" href={{field.upload.url}} target="_blank" rel="noopener noreferrer">{{field.upload.filename}}</a>{{else}}{{field.value}}{{/if}}</td>
                 </tr>
               {{/each}}
             </tbody>
