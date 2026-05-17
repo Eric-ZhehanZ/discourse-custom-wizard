@@ -372,16 +372,35 @@ class CustomWizard::Action
       end
 
     result = nil
+    promoted_to = nil
 
     if groups.present?
       groups.each do |group_id|
         group = Group.find_by(id: group_id) if group_id
-        result = group.add(user) if group
+        next unless group
+
+        result = group.add(user)
+
+        # Adding to an automatic trust_level_N group only inserts the
+        # group_users row — it does NOT bump users.trust_level, because
+        # those automatic groups normally mirror the trust_level rather
+        # than driving it. Admins who configure add_to_group with one
+        # of these targets almost always mean "promote the user", so
+        # call TrustLevelGranter to actually flip the level.
+        if group.automatic && group.name =~ /\Atrust_level_(\d)\z/
+          target_level = Regexp.last_match(1).to_i
+          if user.trust_level < target_level
+            TrustLevelGranter.grant(target_level, user)
+            promoted_to = target_level
+          end
+        end
       end
     end
 
     if result
-      log_success("added to groups", "groups: #{groups.map(&:to_s).join(",")}")
+      detail = "groups: #{groups.map(&:to_s).join(",")}"
+      detail += "; trust_level: #{promoted_to}" if promoted_to
+      log_success("added to groups", detail)
     else
       detail = groups.present? ? "groups: #{groups.map(&:to_s).join(",")}" : nil
       log_error("failed to add to groups", detail)
