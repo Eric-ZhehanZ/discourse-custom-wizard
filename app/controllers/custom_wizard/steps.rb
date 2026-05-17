@@ -77,6 +77,12 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
           # ongoing submission is only kept for re-edit convenience.
           # Approval / rejection drives the final lifecycle via
           # ReviewableCustomWizardSubmission#mark_user_approved! etc.
+
+          # Route the user straight to the wizard's status (hold) page
+          # rather than letting them land on "/" first — without this
+          # the access-guard middleware bounces them back, producing a
+          # visible homepage flash for review-gated submissions.
+          updater.result[:redirect_on_complete] = "/w/#{@wizard.id}"
         else
           @wizard.cleanup_on_complete!
         end

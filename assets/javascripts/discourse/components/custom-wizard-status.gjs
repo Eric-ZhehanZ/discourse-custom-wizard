@@ -26,20 +26,37 @@ import {
 export default class CustomWizardStatus extends Component {
   @service router;
   @tracked submitting = false;
-  // EmberObject mutations don't propagate through Glimmer's `@tracked`
-  // reactivity, so we keep a local @tracked copy of the wizard JSON
-  // and replace it wholesale on refresh. Reading `this.args.wizard.X`
-  // from getters only re-evaluates when the `args.wizard` reference
-  // itself changes (it doesn't, since args is frozen), but reading
-  // `this._refreshedWizard.X` from a tracked field re-runs the getter
-  // any time we assign a new object to that field.
-  @tracked _refreshedWizard = null;
+  // Earlier attempts kept a tracked reference to the whole wizard
+  // EmberObject and read sub-properties off it in getters. Glimmer
+  // only invalidates a getter when one of its tracked dependencies
+  // changes, and an EmberObject property is not a tracked
+  // dependency — so when refresh swapped in a new wizard with the
+  // same shape, only the small slice that read `this.<tracked>`
+  // directly re-rendered (the secondary link), and title/body kept
+  // their stale values. Tracking each rendered slice as its own
+  // primitive @tracked field guarantees Glimmer sees a real change
+  // and re-renders every consumer.
+  @tracked _state;
+  @tracked _previouslyApproved;
+  @tracked _rejectionReason;
+  @tracked _canDeactivate;
+  @tracked _destinationUrl;
 
-  get wizard() {
-    return this._refreshedWizard ?? this.args.wizard;
+  constructor() {
+    super(...arguments);
+    this._syncFromWizard(this.args.wizard);
   }
+
+  _syncFromWizard(w) {
+    this._state = w?.review_state || "none";
+    this._previouslyApproved = !!w?.previously_approved;
+    this._rejectionReason = w?.rejection_reason || null;
+    this._canDeactivate = !!w?.can_deactivate;
+    this._destinationUrl = w?.redirect_back_url || "/";
+  }
+
   get state() {
-    return this.wizard?.review_state || "none";
+    return this._state;
   }
   get isApproved() {
     return this.state === "approved";
@@ -51,19 +68,19 @@ export default class CustomWizardStatus extends Component {
     return this.state === "denied";
   }
   get previouslyApproved() {
-    return !!this.wizard?.previously_approved;
+    return this._previouslyApproved;
   }
   get isPendingFirstTime() {
     return this.isPending && !this.previouslyApproved;
   }
   get rejectionReason() {
-    return this.wizard?.rejection_reason;
+    return this._rejectionReason;
   }
   get canDeactivate() {
-    return !!this.wizard?.can_deactivate;
+    return this._canDeactivate;
   }
   get destinationUrl() {
-    return this.wizard?.redirect_back_url || "/";
+    return this._destinationUrl;
   }
 
   get titleKey() {
@@ -130,16 +147,16 @@ export default class CustomWizardStatus extends Component {
     }
   }
 
-  // Pull fresh wizard JSON, assign it to a tracked field so the entire
-  // template re-renders against the new state, mutate args.wizard so
-  // any sibling components also see the update, and refresh the shared
-  // wizard cache so subsequent route loads start clean.
+  // Pull fresh wizard JSON, copy each rendered slice to its tracked
+  // field (guarantees re-render), mutate args.wizard so sibling
+  // components also see the new state, and update the shared wizard
+  // cache so subsequent route loads start clean.
   async _refreshStatus() {
     if (this.submitting) return;
     this.submitting = true;
     try {
       const fresh = await findCustomWizard(this.args.wizardId);
-      this._refreshedWizard = fresh;
+      this._syncFromWizard(fresh);
       if (this.args.wizard?.setProperties) {
         this.args.wizard.setProperties({
           review_state: fresh.review_state,

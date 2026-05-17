@@ -7,6 +7,17 @@
 # (when the wizard has restrict_to_approved set) is redirected back to
 # resubmit before regaining access.
 class ReviewableCustomWizardSubmission < Reviewable
+  # Discourse's perform controller only forwards plugin params that
+  # the reviewable's class declares here — without this, reject_reason
+  # / send_email arrive as {} in our perform method and the rejection
+  # screen has no reason to show the user.
+  def self.additional_args(params)
+    {
+      reject_reason: params[:reject_reason],
+      send_email: params[:send_email] != "false",
+    }
+  end
+
   def build_actions(actions, guardian, _args)
     return unless pending?
     return unless guardian.is_staff?
@@ -32,16 +43,15 @@ class ReviewableCustomWizardSubmission < Reviewable
   end
 
   def perform_reject_wizard_submission(performer, args)
-    # Persist the reason on the reviewable itself — the WizardSerializer
-    # reads it back when rendering the user-facing denied status page.
-    # update_columns bypasses validations AND callbacks, which matters
-    # because Discourse's Reviewable has after_save hooks that can
-    # clobber a pending change made via save(validate: false).
-    reason = args[:reject_reason].to_s.strip
-    update_columns(reject_reason: reason, updated_at: Time.now) if persisted?
+    # Mark the in-memory attribute so the framework's transition_to
+    # call (which sets status and runs save!) persists the reason in
+    # the same UPDATE. Doing update_columns separately wasn't enough
+    # because the subsequent save! re-wrote the row from in-memory
+    # attrs where reject_reason was still nil.
+    self.reject_reason = args[:reject_reason].to_s.strip
 
     mark_user_denied!
-    notify_user(state: :rejected, performer: performer, reason: reason)
+    notify_user(state: :rejected, performer: performer, reason: reject_reason, send_email: args[:send_email] != false)
     create_result(:success, :rejected)
   end
 
@@ -142,21 +152,35 @@ class ReviewableCustomWizardSubmission < Reviewable
     fresh.save_custom_fields
   end
 
-  def notify_user(state:, performer: nil, reason: nil)
+  def notify_user(state:, performer: nil, reason: nil, send_email: true)
     return unless review_user
 
     message_type =
       state == :approved ? :custom_wizard_review_approved : :custom_wizard_review_denied
     reason_text = reason.to_s.strip.presence
 
-    SystemMessage.create(
-      review_user,
+    creator = SystemMessage.new(review_user)
+    post = creator.create(
       message_type,
       wizard_name: wizard_name,
       wizard_id: wizard_id,
       wizard_url: "/w/#{wizard_id}",
       reason: reason_text || I18n.t("system_messages.custom_wizard_review_denied.no_reason"),
     )
+
+    # Discourse's PostAlerter#notify_pm_users only creates a notification
+    # for the directly-targeted recipient when they're already watching
+    # the topic — which a brand-new system PM recipient never is. The
+    # result without this step is a PM that lands in the user's inbox
+    # silently (no bell, no email). Manually creating the notification
+    # closes that gap; the user gets the standard PM bell + email.
+    if post && post.topic
+      PostAlerter.new.create_notification(
+        review_user,
+        Notification.types[:private_message],
+        post,
+      )
+    end
   rescue StandardError => e
     Rails.logger.warn(
       "custom_wizard: failed to send review #{state} notification to user #{review_user.id}: #{e.class}: #{e.message}",
