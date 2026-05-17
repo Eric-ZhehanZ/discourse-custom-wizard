@@ -7,6 +7,7 @@ import DiscourseURL from "discourse/lib/url";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
+import dLoadingSpinner from "discourse/ui-kit/helpers/d-loading-spinner";
 import { i18n } from "discourse-i18n";
 import {
   findCustomWizard,
@@ -211,28 +212,34 @@ export default class CustomWizardStatus extends Component {
 
     <div class="wizard-step-footer">
       <div class="wizard-buttons">
-        {{#if this.secondaryLabelKey}}
-          <a
-            href
-            role="button"
-            class="action-link{{if
-                this.secondaryIsDangerous
-                ' wizard-status__danger'
-              }}"
-            {{on "click" this.secondary}}
-          >{{i18n this.secondaryLabelKey}}</a>
-        {{/if}}
+        {{! Mirror the wizard step's loading affordance: while a refresh
+            or deactivation ajax call is in flight, swap the buttons for
+            the same spinner the Next button shows. }}
+        {{#if this.submitting}}
+          {{dLoadingSpinner size="small"}}
+        {{else}}
+          {{#if this.secondaryLabelKey}}
+            <a
+              href
+              role="button"
+              class="action-link{{if
+                  this.secondaryIsDangerous
+                  ' wizard-status__danger'
+                }}"
+              {{on "click" this.secondary}}
+            >{{i18n this.secondaryLabelKey}}</a>
+          {{/if}}
 
-        {{#if this.primaryLabelKey}}
-          <button
-            type="button"
-            class="wizard-btn next primary"
-            disabled={{this.submitting}}
-            {{on "click" this.primary}}
-          >
-            {{i18n this.primaryLabelKey}}
-            {{dIcon "chevron-right"}}
-          </button>
+          {{#if this.primaryLabelKey}}
+            <button
+              type="button"
+              class="wizard-btn next primary"
+              {{on "click" this.primary}}
+            >
+              {{i18n this.primaryLabelKey}}
+              {{dIcon "chevron-right"}}
+            </button>
+          {{/if}}
         {{/if}}
       </div>
     </div>

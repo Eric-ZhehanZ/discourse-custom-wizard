@@ -56,7 +56,12 @@ CustomWizard.reopenClass({
     if (result.redirect_on_complete) {
       url = result.redirect_on_complete;
     }
-    DiscourseURL.redirectTo(getUrl(url));
+    // routeTo navigates via Ember when the URL is internal, falling
+    // back to a hard reload only when the URL crosses origins or the
+    // router can't resolve it. redirectTo always reloads. The SPA
+    // transition skips the homepage flash and keeps the wizard
+    // contextual state alive (no full re-bootstrap).
+    DiscourseURL.routeTo(getUrl(url));
   },
 
   build(wizardJson) {

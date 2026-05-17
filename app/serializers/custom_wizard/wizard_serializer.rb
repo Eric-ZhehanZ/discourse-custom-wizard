@@ -103,9 +103,15 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
   # URL the user was trying to reach before being redirected to the
   # wizard, captured by CustomWizard::Wizard.set_wizard_redirect. Used
   # as the destination for the "go to site" / "continue" button on the
-  # approved status page.
+  # approved status page. Strips wizard URLs so an approved user who
+  # got here directly via /w/<id> doesn't get bounced straight back to
+  # the wizard on Continue (the wizard would then re-show the same
+  # status screen → infinite loop until the user gives up).
   def redirect_back_url
-    object.current_submission&.redirect_to.presence
+    url = object.current_submission&.redirect_to.presence
+    return nil if url.blank?
+    return nil if url.start_with?("/w/", "/admin/wizards")
+    url
   end
 
   # True if this user can self-deactivate via the denied status page.

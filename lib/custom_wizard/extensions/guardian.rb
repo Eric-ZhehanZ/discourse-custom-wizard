@@ -72,14 +72,39 @@ module CustomWizardGuardian
     in_delayed_approval_window? || in_pending_review_window?
   end
 
+  # Allowing locked-out users to see PMs they're a participant in is
+  # required for two correctness reasons:
+  #
+  # 1. PostAlerter#create_notification calls can_see_post? before
+  #    writing a Notification row. Without this exemption the
+  #    rejection PM lands silently — no bell, no email — because the
+  #    notification was suppressed by the very lockdown the PM is
+  #    explaining to the user.
+  # 2. A held user might receive a moderator follow-up PM about their
+  #    submission; we don't want the lockdown to hide that either.
+  #
+  # The narrow check (allowed_users only) means PMs from third parties
+  # the user isn't a participant in are still blocked.
   def can_see_topic?(topic, hide_deleted = true)
-    return false if in_wizard_lockout?
+    if in_wizard_lockout?
+      return true if pm_for_locked_out_user?(topic)
+      return false
+    end
     super
   end
 
   def can_see_post?(post)
-    return false if in_wizard_lockout?
+    if in_wizard_lockout?
+      return true if post.respond_to?(:topic) && pm_for_locked_out_user?(post.topic)
+      return false
+    end
     super
+  end
+
+  def pm_for_locked_out_user?(topic)
+    return false unless topic&.private_message?
+    return false unless @user
+    topic.all_allowed_users.where(id: @user.id).exists?
   end
 
   def can_create_post?(parent)
