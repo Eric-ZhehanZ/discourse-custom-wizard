@@ -261,7 +261,12 @@ after_initialize do
     # from "/" to "/admin" wouldn't trip the /admin exclusion (referer
     # was "/"). Checking request.path makes the exclusion reliable so
     # admins can always reach /admin even while gated.
-    @excluded_routes ||= SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/", "/admin"]
+    # /review is Discourse's top-level reviewables page, not under /admin —
+    # staff need it open while gated so they can approve their own pending
+    # submission (or anyone else's) without having to first clear the
+    # redirect by another route.
+    @excluded_routes ||=
+      SiteSetting.wizard_redirect_exclude_paths.split("|") + ["/w/", "/admin", "/review"]
     url = request.referer || request.original_url
     path = request.path
     excluded_route = @excluded_routes.any? { |str| /#{str}/ =~ url || /#{str}/ =~ path }
