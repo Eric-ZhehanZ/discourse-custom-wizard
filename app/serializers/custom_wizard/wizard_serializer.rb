@@ -110,7 +110,20 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
   def redirect_back_url
     url = object.current_submission&.redirect_to.presence
     return nil if url.blank?
-    return nil if url.start_with?("/w/", "/admin/wizards")
+
+    # set_wizard_redirect stores request.referer / request.original_url,
+    # which are ABSOLUTE (`https://host/w/<id>`). Earlier we only
+    # rejected paths that started with /w/, so an approved user whose
+    # original URL was the wizard itself would get bounced straight
+    # back on Continue. Extract the path so the filter works for both
+    # absolute and relative shapes.
+    path =
+      begin
+        URI(url).path.presence || url
+      rescue URI::InvalidURIError
+        url
+      end
+    return nil if path.start_with?("/w/", "/admin/wizards")
     url
   end
 
