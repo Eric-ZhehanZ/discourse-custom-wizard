@@ -4,11 +4,31 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
 
   def show
     if wizard.present?
+      mark_approval_seen!(wizard)
       render json: CustomWizard::WizardSerializer.new(wizard, scope: guardian, root: false).as_json,
              status: 200
     else
       render json: { error: I18n.t("wizard.none") }
     end
+  end
+
+  # Records that the user has viewed the approval status page and
+  # clears the matching `redirect_to_wizard` so they aren't bounced
+  # back here on their next navigation. Called from #show — the user
+  # is literally looking at the approval notice right now. Refreshing
+  # the page is a no-op once the marker is set. Re-approvals reset
+  # the marker (see ReviewableCustomWizardSubmission#mark_user_approved!)
+  # so a fresh approval triggers the one-shot redirect again.
+  def mark_approval_seen!(w)
+    return unless w.user
+    return unless w.user.custom_fields["wizard_approved_#{w.id}"]
+    return if w.user.custom_fields["wizard_approved_seen_#{w.id}"]
+
+    w.user.custom_fields["wizard_approved_seen_#{w.id}"] = true
+    if w.user.custom_fields["redirect_to_wizard"].to_s == w.id.to_s
+      w.user.custom_fields.delete("redirect_to_wizard")
+    end
+    w.user.save_custom_fields
   end
 
   def skip
@@ -42,6 +62,51 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
     end
 
     render json: result
+  end
+
+  # One-shot consumption of the stored intent URL. Called by the
+  # status page's Continue button: returns a safe destination AND
+  # clears submission.redirect_to so the next visit doesn't keep
+  # carrying the same destination forward forever.
+  #
+  # The returned path is always relative (path + query only) — even
+  # if the stored value happened to be absolute. This stops a stored
+  # cross-origin URL from being handed to DiscourseURL.routeTo as a
+  # destination, closing what would otherwise be an open-redirect
+  # surface if anything ever managed to set submission.redirect_to
+  # to an off-site URL.
+  def consume_redirect
+    return render json: failed_json unless current_user
+    return render json: failed_json unless wizard
+
+    submission = wizard.intent_submission
+    raw = submission&.redirect_to.presence
+    safe = CustomWizard::Wizard.sanitize_redirect_path(raw)
+
+    if submission && raw
+      submission.redirect_to = nil
+      submission.save
+    end
+
+    # Belt-and-suspenders: the reviewable already clears
+    # `redirect_to_wizard` on approval, but stale state can survive in
+    # edge cases (manual re-pending, legacy users carrying the field
+    # from before approval logic was added, etc.). Without this, the
+    # client-side `page:changed` initializer in
+    # custom-wizard-redirect.js loops the user back to /w/<id> the
+    # moment they navigate away. Only clear when the user has actually
+    # passed the gate — never when they are still required to redo the
+    # wizard, otherwise this becomes a self-service bypass.
+    if !wizard.respond_to?(:required_for_user?) ||
+         !wizard.required_for_user?(current_user) ||
+         current_user.custom_fields["wizard_approved_#{wizard.id}"]
+      if current_user.custom_fields["redirect_to_wizard"].to_s == wizard.id.to_s
+        current_user.custom_fields.delete("redirect_to_wizard")
+        current_user.save_custom_fields
+      end
+    end
+
+    render json: { redirect_to: safe || CustomWizard::Wizard.fallback_destination }
   end
 
   # Self-suspension for users who give up on a denied wizard. We use

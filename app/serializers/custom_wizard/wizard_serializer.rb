@@ -107,24 +107,14 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
   # got here directly via /w/<id> doesn't get bounced straight back to
   # the wizard on Continue (the wizard would then re-show the same
   # status screen → infinite loop until the user gives up).
+  # Returns a SAFE path for the Continue button to navigate to. The
+  # actual click goes through PUT /w/:wizard_id/consume-redirect so
+  # the field also gets cleared one-shot — this serializer value is
+  # informational only (lets us hide the button entirely if there's
+  # no destination).
   def redirect_back_url
-    url = object.current_submission&.redirect_to.presence
-    return nil if url.blank?
-
-    # set_wizard_redirect stores request.referer / request.original_url,
-    # which are ABSOLUTE (`https://host/w/<id>`). Earlier we only
-    # rejected paths that started with /w/, so an approved user whose
-    # original URL was the wizard itself would get bounced straight
-    # back on Continue. Extract the path so the filter works for both
-    # absolute and relative shapes.
-    path =
-      begin
-        URI(url).path.presence || url
-      rescue URI::InvalidURIError
-        url
-      end
-    return nil if path.start_with?("/w/", "/admin/wizards")
-    url
+    CustomWizard::Wizard.sanitize_redirect_path(object.intent_submission&.redirect_to) ||
+      CustomWizard::Wizard.fallback_destination
   end
 
   # True if this user can self-deactivate via the denied status page.

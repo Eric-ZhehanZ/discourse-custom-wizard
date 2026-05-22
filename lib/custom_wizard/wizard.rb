@@ -385,6 +385,16 @@ class CustomWizard::Wizard
       end
   end
 
+  # Most recent submission (any state) that still carries a stored
+  # `redirect_to`. The intent URL is written onto the unsubmitted
+  # submission at invite-redeem time, then frozen-in-place when the
+  # wizard completes — `current_submission` rolls forward to a fresh
+  # empty object once submitted_at lands, which orphans the intent.
+  # Submissions are pre-sorted newest-first, so .find is enough.
+  def intent_submission
+    @intent_submission ||= submissions.find { |s| s.redirect_to.present? }
+  end
+
   def cleanup_on_complete!
     was_in_delayed_approval = delayed_approval_pending?
 
@@ -519,6 +529,42 @@ class CustomWizard::Wizard
     else
       false
     end
+  end
+
+  # Strip a stored redirect URL down to a same-origin path+query
+  # string. Returns nil for URLs that point at the wizard itself
+  # (avoids loops), at the admin wizard area, at the empty-path "/"
+  # (which the caller defaults to anyway), or that can't be parsed.
+  #
+  # Used by both the WizardSerializer (when previewing the Continue
+  # destination on the status page) and by the consume-redirect
+  # controller action (when actually navigating). Keeping one
+  # implementation means the displayed-vs-navigated destination can
+  # never drift.
+  # Where the "Continue" button on the wizard's status page should
+  # send the user when the stored intent URL is absent or rejected.
+  # Falls back to Discourse's `welcome_topic_id` if configured (the
+  # site-level "first time topic" — the same one new users land on
+  # when no specific destination is set), otherwise the home page.
+  def self.fallback_destination
+    wid = SiteSetting.welcome_topic_id.to_i
+    wid > 0 ? "/t/#{wid}" : "/"
+  end
+
+  def self.sanitize_redirect_path(url)
+    return nil if url.blank?
+    uri =
+      begin
+        URI(url.to_s)
+      rescue URI::InvalidURIError
+        nil
+      end
+    return nil if uri.nil?
+    path = uri.path.presence
+    return nil if path.blank?
+    return nil unless path.start_with?("/")
+    return nil if path.start_with?("/w/", "/admin/wizards")
+    uri.query.present? ? "#{path}?#{uri.query}" : path
   end
 
   def self.set_wizard_redirect(user, wizard_id, url)

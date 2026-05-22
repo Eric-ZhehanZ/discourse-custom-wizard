@@ -245,7 +245,21 @@ after_initialize do
     # /admin available as the escape hatch via excluded_route below.
     if current_user.custom_fields["redirect_to_wizard"].blank?
       CustomWizard::Template.restrict_to_approved_ids.each do |wid|
-        next if current_user.custom_fields["wizard_approved_#{wid}"]
+        if current_user.custom_fields["wizard_approved_#{wid}"]
+          # Approved but hasn't acknowledged the approval yet — bounce
+          # them through the wizard once so they see the approved
+          # status page. The `wizard_approved_seen_` marker is cleared
+          # on every fresh approval (see ReviewableCustomWizardSubmission)
+          # so subsequent re-approvals trigger this same one-shot
+          # again. The marker is set when the user actually views the
+          # status page (see WizardController#show), which also clears
+          # the redirect we're setting here so we don't loop.
+          next if current_user.custom_fields["wizard_approved_seen_#{wid}"]
+          current_user.custom_fields["redirect_to_wizard"] = wid
+          current_user.save_custom_fields
+          break
+        end
+
         wiz = CustomWizard::Wizard.create(wid, current_user)
         next unless wiz
         if wiz.required_for_user?(current_user)

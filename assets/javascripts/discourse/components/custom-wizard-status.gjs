@@ -26,6 +26,7 @@ import {
 //   denied                → "Resubmit" / "Give up and deactivate"
 export default class CustomWizardStatus extends Component {
   @service router;
+  @service currentUser;
   @tracked submitting = false;
   // Earlier attempts kept a tracked reference to the whole wizard
   // EmberObject and read sub-properties off it in getters. Glimmer
@@ -115,12 +116,34 @@ export default class CustomWizardStatus extends Component {
   }
 
   @action
-  primary(event) {
+  async primary(event) {
     event?.preventDefault?.();
     if (this.isApproved || (this.isPending && !this.isPendingFirstTime)) {
-      // Use Discourse's URL router so internal destinations transition
-      // via Ember instead of triggering a full page reload.
-      DiscourseURL.routeTo(this.destinationUrl);
+      // One-shot consumption: the server returns a safe destination AND
+      // clears submission.redirect_to so a subsequent visit reverts to
+      // default behavior. Falls back to "/" on any failure rather than
+      // leaving the user stranded on the status page.
+      if (this.submitting) return;
+      this.submitting = true;
+      let target = "/";
+      try {
+        const data = await ajax(`/w/${this.args.wizardId}/consume-redirect`, {
+          type: "PUT",
+        });
+        target = data?.redirect_to || "/";
+      } catch (e) {
+        popupAjaxError(e);
+      } finally {
+        this.submitting = false;
+      }
+      // The reviewable clears `redirect_to_wizard` on approval server-
+      // side, but the currentUser object cached in this session still
+      // carries the stale wizard id. Without this, the page:changed
+      // initializer in custom-wizard-redirect.js sees the stale field
+      // immediately after routeTo and bounces the user right back to
+      // the wizard, so the intended destination is never reached.
+      this.currentUser?.setProperties?.({ redirect_to_wizard: null });
+      DiscourseURL.routeTo(target);
       return;
     }
     if (this.isDenied) {
