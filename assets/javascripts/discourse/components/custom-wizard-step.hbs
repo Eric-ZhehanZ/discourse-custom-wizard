@@ -34,6 +34,17 @@
           tabindex={{this.secondaryButtonIndex}}
         >{{i18n "wizard.quit"}}</a>
       {{/if}}
+      {{#if this.showSkipButton}}
+        <a
+          href
+          {{action "skipForNow"}}
+          class="action-link skip-for-now"
+          tabindex={{this.secondaryButtonIndex}}
+        >{{i18n
+            "wizard.skip_for_now"
+            count=this.wizard.remaining_skips
+          }}</a>
+      {{/if}}
       {{#if this.showBackButton}}
         <a
           href
@@ -73,5 +84,11 @@
       </button>
     {{/if}}
   </div>
+
+  {{#if this.skipDeadlineDate}}
+    <div class="wizard-skip-deadline-notice">
+      {{i18n "wizard.skip_deadline_notice" date=this.skipDeadlineDate}}
+    </div>
+  {{/if}}
 
 </div>

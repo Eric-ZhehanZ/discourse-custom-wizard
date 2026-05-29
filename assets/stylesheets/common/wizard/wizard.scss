@@ -272,3 +272,18 @@ body.custom-wizard {
     }
   }
 }
+
+// Soft-skip: the "verify by <date>" caption sits on its own line below
+// the footer buttons. flex-wrap lets it drop down without disturbing the
+// normal single-row button layout.
+body.custom-wizard .wizard-step-footer {
+  flex-wrap: wrap;
+
+  .wizard-skip-deadline-notice {
+    flex-basis: 100%;
+    text-align: right;
+    margin-top: 0.25em;
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+  }
+}

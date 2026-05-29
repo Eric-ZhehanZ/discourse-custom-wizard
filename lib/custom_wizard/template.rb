@@ -6,6 +6,7 @@ class CustomWizard::Template
   AFTER_SIGNUP_CACHE_KEY ||= "after_signup_wizard_ids"
   AFTER_TIME_CACHE_KEY ||= "after_time_wizard_ids"
   RESTRICT_TO_APPROVED_CACHE_KEY ||= "restrict_to_approved_wizard_ids"
+  SKIP_ENABLED_CACHE_KEY ||= "skip_enabled_wizard_ids"
 
   attr_reader :data, :opts, :steps, :actions
 
@@ -144,6 +145,12 @@ class CustomWizard::Template
     end
   end
 
+  def self.skip_enabled_ids
+    ::CustomWizard::Cache.wrap(SKIP_ENABLED_CACHE_KEY) do
+      list(setting: "skip_enabled").map { |t| t["id"] }
+    end
+  end
+
   def self.can_redirect_users?(wizard_id)
     return true if after_signup_ids.include?(wizard_id)
     return true if after_time_ids.include?(wizard_id)
@@ -158,6 +165,7 @@ class CustomWizard::Template
     CustomWizard::Cache.new(RESTRICT_TO_APPROVED_CACHE_KEY).delete
     CustomWizard::Cache.new(AFTER_SIGNUP_CACHE_KEY).delete
     CustomWizard::Cache.new(AFTER_TIME_CACHE_KEY).delete
+    CustomWizard::Cache.new(SKIP_ENABLED_CACHE_KEY).delete
   end
 
   def self.ensure_wizard_upload_references!(wizard_id, wizard_upload_ids = [])

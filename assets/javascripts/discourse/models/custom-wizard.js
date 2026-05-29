@@ -2,6 +2,7 @@ import EmberObject from "@ember/object";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import DiscourseURL from "discourse/lib/url";
+import User from "discourse/models/user";
 import getUrl from "discourse-common/lib/get-url";
 import discourseComputed from "discourse-common/utils/decorators";
 import CustomWizardField from "./custom-wizard-field";
@@ -12,7 +13,15 @@ const CustomWizard = EmberObject.extend({
   totalSteps: (length) => length,
 
   skip() {
-    if (this.required && !this.completed && this.permitted) {
+    // A forced (required) wizard normally can't be skipped — but a
+    // soft-skip-enabled one can, while the user still has skips left and
+    // the deadline hasn't passed (server-authoritative `skip_allowed`).
+    if (
+      this.required &&
+      !this.completed &&
+      this.permitted &&
+      !this.skip_allowed
+    ) {
       return;
     }
     CustomWizard.skip(this.id);
@@ -34,6 +43,15 @@ CustomWizard.reopenClass({
         // already on the correct page and should just stay there.
         if (result && result.locked) {
           return;
+        }
+        // Soft-skip: stop the page:changed initializer from bouncing the
+        // user straight back to the wizard for the rest of this session.
+        // The server keeps redirect_to_wizard set for deadline
+        // enforcement and re-serializes it (un-suppressed) after the
+        // snooze elapses / on the next full load, so the prompt returns.
+        const currentUser = User.current();
+        if (currentUser) {
+          currentUser.set("redirect_to_wizard", null);
         }
         CustomWizard.finished(result);
       })

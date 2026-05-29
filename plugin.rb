@@ -47,6 +47,8 @@ after_initialize do
   require_relative "app/controllers/custom_wizard/realtime_validations.rb"
   require_relative "app/jobs/regular/refresh_api_access_token.rb"
   require_relative "app/jobs/regular/set_after_time_wizard.rb"
+  require_relative "app/jobs/regular/custom_wizard_skip_reminder.rb"
+  require_relative "lib/custom_wizard/skip_policy.rb"
   require_relative "lib/custom_wizard/validators/template.rb"
   require_relative "lib/custom_wizard/validators/update.rb"
   require_relative "lib/custom_wizard/action_result.rb"
@@ -145,7 +147,22 @@ after_initialize do
     end
   end
 
-  add_to_serializer(:current_user, :redirect_to_wizard) { object.redirect_to_wizard }
+  # Hide the redirect from the client (suppressing the page:changed
+  # SPA bounce) while the user is inside a soft-skip grace/snooze
+  # window — even though the underlying custom field stays set so the
+  # deadline can still force completion later. The admin list keeps
+  # showing the raw field so staff can see who is still gated.
+  add_to_serializer(:current_user, :redirect_to_wizard) do
+    wid = object.redirect_to_wizard
+    next nil if wid.blank?
+    # Fast path: only skip-enabled wizards can suppress the redirect, so a
+    # cached id-list membership check keeps non-skip wizards off the
+    # build-the-wizard path (one DB lookup + object construction) entirely.
+    next wid unless CustomWizard::Template.skip_enabled_ids.include?(wid)
+    wizard = CustomWizard::Wizard.create(wid, object)
+    next wid unless wizard
+    CustomWizard::SkipPolicy.suppress_redirect?(object, wizard) ? nil : wid
+  end
   add_to_serializer(:admin_user_list, :redirect_to_wizard) { object.redirect_to_wizard }
 
   on(:user_approved) do |user|
@@ -222,6 +239,17 @@ after_initialize do
 
     if in_delayed_approval
       return if request.format != "text/html"
+
+      # Soft-skip: if the locked wizard opts into limited skips, let the
+      # user browse during their grace window or an active skip snooze.
+      # Once that closes (but before the deadline) we fall through to the
+      # usual hard redirect so they're prompted again, and we make sure
+      # the reminder series is scheduled.
+      da_wizard = CustomWizard::Wizard.create(delayed_approval_wizard_id, current_user)
+      if da_wizard && CustomWizard::SkipPolicy.enabled?(da_wizard) &&
+           CustomWizard::SkipPolicy.suppress_redirect?(current_user, da_wizard)
+        return
+      end
 
       wizard_path_segment = "/w/#{delayed_approval_wizard_id.dasherize}"
       return if request.path.start_with?(wizard_path_segment)
@@ -301,6 +329,11 @@ after_initialize do
              !wizard.can_access?(always_allow_admin: false)
           current_user.custom_fields.delete("redirect_to_wizard")
           current_user.save_custom_fields
+        elsif CustomWizard::SkipPolicy.enabled?(wizard) &&
+              CustomWizard::SkipPolicy.suppress_redirect?(current_user, wizard)
+          # Soft-skip grace/snooze window: no redirect, full access. The
+          # redirect_to_wizard field is intentionally left in place so
+          # the deadline can still force completion once the window closes.
         else
           if url !~ %r{/w/} && url !~ %r{/invites/}
             CustomWizard::Wizard.set_wizard_redirect(current_user, wizard_id, url)

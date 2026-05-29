@@ -15,7 +15,12 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
              :must_redo,
              :rejection_reason,
              :redirect_back_url,
-             :can_deactivate
+             :can_deactivate,
+             :skip_enabled,
+             :skip_allowed,
+             :remaining_skips,
+             :skip_max,
+             :skip_deadline
 
   has_many :steps, serializer: ::CustomWizard::StepSerializer, embed: :objects
   has_one :user, serializer: ::BasicUserSerializer, embed: :objects
@@ -122,5 +127,48 @@ class CustomWizard::WizardSerializer < CustomWizard::BasicWizardSerializer
   # link — they would lock themselves out of moderating the queue.
   def can_deactivate
     !!object.user && !object.user.staff?
+  end
+
+  # ---- Soft-skip fields (drive the "Skip for now" button) -----------
+  # Only emitted for skip-enabled wizards so other wizards stay lean.
+
+  def skip_enabled
+    !!object.skip_enabled
+  end
+
+  def skip_allowed
+    !!object.user && CustomWizard::SkipPolicy.can_skip?(object.user, object)
+  end
+
+  def include_skip_allowed?
+    object.skip_enabled
+  end
+
+  def remaining_skips
+    return nil unless object.user
+    CustomWizard::SkipPolicy.skips_remaining(object.user, object)
+  end
+
+  def include_remaining_skips?
+    object.skip_enabled
+  end
+
+  def skip_max
+    object.skip_max.to_i
+  end
+
+  def include_skip_max?
+    object.skip_enabled
+  end
+
+  # Effective hard deadline (ISO8601), earliest of the relative window
+  # and the absolute event cutoff. nil when no deadline is configured.
+  def skip_deadline
+    return nil unless object.user
+    CustomWizard::SkipPolicy.deadline_for(object.user, object)&.iso8601
+  end
+
+  def include_skip_deadline?
+    object.skip_enabled
   end
 end

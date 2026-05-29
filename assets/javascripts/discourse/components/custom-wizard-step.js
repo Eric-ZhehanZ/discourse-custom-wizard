@@ -71,6 +71,24 @@ export default Component.extend({
   @discourseComputed("step.index", "wizard.required")
   showQuitButton: (index, required) => index === 0 && !required,
 
+  // "Skip for now" — shown for soft-skip-enabled forced wizards while
+  // the user still has skips left and the deadline hasn't passed
+  // (server-authoritative `skip_allowed`).
+  @discourseComputed("wizard.skip_allowed")
+  showSkipButton: (skipAllowed) => !!skipAllowed,
+
+  @discourseComputed("wizard.skip_deadline")
+  skipDeadlineDate(deadline) {
+    if (!deadline) {
+      return null;
+    }
+    const date = new Date(deadline);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    return date.toLocaleString();
+  },
+
   showNextButton: not("step.final"),
   showDoneButton: alias("step.final"),
   // `uploading` here tracks composer editor uploads (see
@@ -201,6 +219,10 @@ export default Component.extend({
 
   actions: {
     quit() {
+      this.get("wizard").skip();
+    },
+
+    skipForNow() {
       this.get("wizard").skip();
     },
 

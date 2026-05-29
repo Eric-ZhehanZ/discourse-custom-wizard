@@ -34,6 +34,37 @@ class CustomWizard::WizardController < ::CustomWizard::WizardClientController
   def skip
     params.require(:wizard_id)
 
+    # Soft-skip: a forced wizard that opts into limited skips lets the
+    # user dismiss it a bounded number of times before a hard deadline
+    # forces completion. We do NOT clear redirect_to_wizard or the
+    # submission here (unlike cleanup_on_skip!) — only a snooze is set,
+    # so the deadline backstop can still re-engage once it elapses.
+    if current_user && CustomWizard::SkipPolicy.enabled?(wizard)
+      if CustomWizard::SkipPolicy.can_skip?(current_user, wizard) &&
+           CustomWizard::SkipPolicy.record_skip!(current_user, wizard)
+        result = {
+          success: "OK",
+          remaining_skips: CustomWizard::SkipPolicy.skips_remaining(current_user, wizard),
+        }
+        dest = CustomWizard::Wizard.sanitize_redirect_path(wizard.current_submission&.redirect_to)
+        result[:redirect_on_complete] = dest if dest
+        return render json: result
+      else
+        error_key =
+          (
+            if CustomWizard::SkipPolicy.deadline_passed?(current_user, wizard)
+              "wizard.skip_deadline_passed"
+            else
+              "wizard.no_skip"
+            end
+          )
+        # 422 (not a silent 200) so the client's popupAjaxError surfaces the
+        # reason and leaves the user on the wizard. redirect_to_wizard stays
+        # set server-side, so completion is still forced.
+        return render json: { errors: [I18n.t(error_key)] }, status: 422
+      end
+    end
+
     # Delayed-approval users cannot skip the wizard they are locked into.
     # We return a 200 response (not 403) with a structured `locked` flag so
     # the frontend can silently ignore the attempt without triggering

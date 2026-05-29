@@ -25,6 +25,14 @@ class CustomWizard::Wizard
                 :prompt_completion,
                 :restart_on_revisit,
                 :resume_on_revisit,
+                :skip_enabled,
+                :skip_max,
+                :skip_defer_hours,
+                :skip_deadline_hours,
+                :skip_event_deadline,
+                :skip_reminder_enabled,
+                :skip_reminder_interval_hours,
+                :skip_reminder_text,
                 :permitted,
                 :steps,
                 :step_ids,
@@ -68,6 +76,14 @@ class CustomWizard::Wizard
     @prompt_completion = cast_bool(attrs["prompt_completion"])
     @restart_on_revisit = cast_bool(attrs["restart_on_revisit"])
     @resume_on_revisit = cast_bool(attrs["resume_on_revisit"])
+    @skip_enabled = cast_bool(attrs["skip_enabled"])
+    @skip_max = attrs["skip_max"]
+    @skip_defer_hours = attrs["skip_defer_hours"]
+    @skip_deadline_hours = attrs["skip_deadline_hours"]
+    @skip_event_deadline = attrs["skip_event_deadline"]
+    @skip_reminder_enabled = cast_bool(attrs["skip_reminder_enabled"])
+    @skip_reminder_interval_hours = attrs["skip_reminder_interval_hours"]
+    @skip_reminder_text = attrs["skip_reminder_text"]
     @after_signup = cast_bool(attrs["after_signup"])
     @delay_approval_until_finish = cast_bool(attrs["delay_approval_until_finish"])
     @restrict_to_approved = cast_bool(attrs["restrict_to_approved"])
@@ -399,6 +415,10 @@ class CustomWizard::Wizard
     was_in_delayed_approval = delayed_approval_pending?
 
     remove_user_redirect
+
+    # Wipe any soft-skip counters/snooze/reminder state so a future
+    # re-enrollment (multiple_submissions / re-verification) starts clean.
+    CustomWizard::SkipPolicy.clear_state!(user, self) if user
 
     if current_submission.present?
       current_submission.submitted_at = Time.now.iso8601

@@ -69,7 +69,34 @@ module CustomWizardGuardian
   end
 
   def in_wizard_lockout?
-    in_delayed_approval_window? || in_pending_review_window?
+    locked = in_delayed_approval_window? || in_pending_review_window?
+    return false unless locked
+    # Soft-skip: grant full access while the user is inside a grace /
+    # snooze window or still holds skips. The lockdown re-engages the
+    # moment skips are exhausted or the hard deadline passes.
+    return false if wizard_soft_window_active?
+    true
+  end
+
+  # Memoized per Guardian instance (cheap for non-gated users since it
+  # only runs once `locked` is already true). Resolves the wizard that
+  # is gating this user and asks SkipPolicy whether they're still in the
+  # soft window.
+  def wizard_soft_window_active?
+    return @cw_soft_window if defined?(@cw_soft_window)
+
+    @cw_soft_window =
+      begin
+        wid =
+          @user.custom_fields["delayed_approval_wizard_id"].presence ||
+            @user.custom_fields["redirect_to_wizard"].presence
+        if wid.blank?
+          false
+        else
+          wizard = CustomWizard::Wizard.create(wid, @user)
+          !!(wizard && CustomWizard::SkipPolicy.in_soft_window?(@user, wizard))
+        end
+      end
   end
 
   # Allowing locked-out users to see PMs they're a participant in is

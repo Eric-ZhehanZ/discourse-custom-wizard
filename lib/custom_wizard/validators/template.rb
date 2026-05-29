@@ -17,6 +17,7 @@ class CustomWizard::TemplateValidator
     validate_after_signup
     validate_delay_approval_until_finish
     validate_after_time
+    validate_skip_settings
     validate_subscription(data, :wizard)
 
     return false if errors.any?
@@ -118,6 +119,49 @@ class CustomWizard::TemplateValidator
 
     # Force required=true so the user cannot skip the wizard during the lockdown window
     @data[:required] = true
+  end
+
+  def validate_skip_settings
+    return unless ActiveRecord::Type::Boolean.new.cast(@data[:skip_enabled])
+
+    forced =
+      ActiveRecord::Type::Boolean.new.cast(@data[:after_signup]) ||
+        ActiveRecord::Type::Boolean.new.cast(@data[:restrict_to_approved]) ||
+        ActiveRecord::Type::Boolean.new.cast(@data[:delay_approval_until_finish])
+    unless forced
+      errors.add :base, I18n.t("wizard.validation.skip_requires_forced")
+      return
+    end
+
+    # The deadline is the security backstop — require at least one form of
+    # it so "skip enabled, no deadline" (a permanent bypass) is impossible.
+    has_relative = @data[:skip_deadline_hours].to_i > 0
+    has_event = @data[:skip_event_deadline].present?
+    unless has_relative || has_event
+      errors.add :base, I18n.t("wizard.validation.skip_requires_deadline")
+      return
+    end
+
+    %i[skip_max skip_defer_hours skip_deadline_hours skip_reminder_interval_hours].each do |key|
+      value = @data[key]
+      next if value.blank?
+      unless value.to_s.match?(/\A\d+\z/)
+        errors.add :base, I18n.t("wizard.validation.skip_non_negative", field: key.to_s)
+      end
+    end
+
+    if ActiveRecord::Type::Boolean.new.cast(@data[:skip_reminder_enabled]) &&
+         @data[:skip_reminder_interval_hours].to_i <= 0
+      errors.add :base, I18n.t("wizard.validation.skip_reminder_interval")
+    end
+
+    if @data[:skip_event_deadline].present?
+      begin
+        Time.parse(@data[:skip_event_deadline].to_s)
+      rescue ArgumentError
+        errors.add :base, I18n.t("wizard.validation.skip_event_deadline")
+      end
+    end
   end
 
   def validate_after_time

@@ -196,6 +196,120 @@
 
     <div class="setting">
       <div class="setting-label">
+        <label>{{i18n "admin.wizard.skip_enabled"}}</label>
+      </div>
+      <div class="setting-value">
+        <Input @type="checkbox" @checked={{this.wizard.skip_enabled}} />
+        <span>{{i18n "admin.wizard.skip_enabled_label"}}</span>
+      </div>
+    </div>
+
+    {{#if this.wizard.skip_enabled}}
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.skip_max"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input @type="number" min="0" @value={{this.wizard.skip_max}} />
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n "admin.wizard.skip_max_label"}}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.skip_defer_hours"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input @type="number" min="0" @value={{this.wizard.skip_defer_hours}} />
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n "admin.wizard.skip_defer_hours_label"}}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.skip_deadline_hours"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input @type="number" min="0" @value={{this.wizard.skip_deadline_hours}} />
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n
+                "admin.wizard.skip_deadline_hours_label"
+              }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.skip_event_deadline"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input
+            @type="datetime-local"
+            @value={{this.wizard.skip_event_deadline}}
+          />
+          <div class="setting-gutter">
+            <label class="instructions">{{i18n
+                "admin.wizard.skip_event_deadline_label"
+              }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-label">
+          <label>{{i18n "admin.wizard.skip_reminder_enabled"}}</label>
+        </div>
+        <div class="setting-value">
+          <Input @type="checkbox" @checked={{this.wizard.skip_reminder_enabled}} />
+          <span>{{i18n "admin.wizard.skip_reminder_enabled_label"}}</span>
+        </div>
+      </div>
+
+      {{#if this.wizard.skip_reminder_enabled}}
+        <div class="setting">
+          <div class="setting-label">
+            <label>{{i18n "admin.wizard.skip_reminder_interval_hours"}}</label>
+          </div>
+          <div class="setting-value">
+            <Input
+              @type="number"
+              min="1"
+              @value={{this.wizard.skip_reminder_interval_hours}}
+            />
+            <div class="setting-gutter">
+              <label class="instructions">{{i18n
+                  "admin.wizard.skip_reminder_interval_hours_label"
+                }}</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting full">
+          <div class="setting-label">
+            <label>{{i18n "admin.wizard.skip_reminder_text"}}</label>
+          </div>
+          <div class="setting-value">
+            <Textarea
+              @value={{this.wizard.skip_reminder_text}}
+              class="wizard-skip-reminder-text"
+            />
+            <div class="setting-gutter">
+              <label class="instructions">{{i18n
+                  "admin.wizard.skip_reminder_text_label"
+                }}</label>
+            </div>
+          </div>
+        </div>
+      {{/if}}
+    {{/if}}
+
+    <div class="setting">
+      <div class="setting-label">
         <label>{{i18n "admin.wizard.restart_on_revisit"}}</label>
       </div>
       <div class="setting-value">
