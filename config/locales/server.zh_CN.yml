@@ -37,6 +37,25 @@ zh_CN:
         %{reason}
 
         请[重新提交此表单](%{wizard_url})以继续。
+    custom_wizard_skip_reminder:
+      title: "提醒：请完成验证"
+      no_deadline: "尽快"
+      text_body_template: |
+        您好 %{username}，
+
+        您仍需完成 **%{wizard_name}** 以验证您的账户。
+
+        您还可以跳过 %{remaining_skips} 次，但必须在 %{deadline} 之前完成。
+
+        [立即完成](%{wizard_url})。
+    custom_wizard_skip_deadline_reached:
+      title: "现在必须完成验证"
+      text_body_template: |
+        您好 %{username}，
+
+        验证账户的截止时间已过，**%{wizard_name}** 不能再被跳过。
+
+        请[立即完成](%{wizard_url})以恢复完整访问权限。
 
   wizard:
     custom_title: "向导"
@@ -69,6 +88,7 @@ zh_CN:
 
     none: "我们未能在该地址找到向导。"
     no_skip: "向导不能被跳过"
+    skip_deadline_passed: "跳过此向导的截止时间已过——请完成它以继续。"
     export:
       error:
         select_one: "请选择至少一个有效向导"
@@ -96,6 +116,11 @@ zh_CN:
       liquid_syntax_error: "%{attribute} 中存在 Liquid 语法错误：%{message}"
       subscription: "%{type} %{property} 的使用在您的订阅中不受支持"
       not_permitted_for_guests: "当访客可以访问向导时，不允许使用 %{object_id}"
+      skip_requires_forced: "“允许临时跳过”要求向导为强制类型（启用“注册后”“基于审核限制访问”或“延迟批准”）。"
+      skip_requires_deadline: "“允许临时跳过”需要设置截止时间：请设置“注册后截止时间（小时）”和/或“活动截止时间”，以免跳过被无限期推迟。"
+      skip_non_negative: "%{field} 必须为 0 或更大的整数。"
+      skip_reminder_interval: "启用提醒时，提醒间隔必须至少为 1 小时。"
+      skip_event_deadline: "活动截止时间不是有效的日期/时间。"
     error_messages:
       wizard_replacing_composer: "该分类不允许创建主题。"
     delayed_approval:

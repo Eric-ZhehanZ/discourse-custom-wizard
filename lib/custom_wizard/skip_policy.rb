@@ -262,9 +262,14 @@ module CustomWizard
       end
 
       # ---- reminder DMs ----------------------------------------------
-      def format_deadline(time)
+      # Locale-neutral, numeric format (no English month names), shown in
+      # the user's own timezone when they have one set, else UTC. %Z
+      # appends the zone abbreviation so the instant is unambiguous.
+      def format_deadline(time, user = nil)
         return I18n.t("system_messages.custom_wizard_skip_reminder.no_deadline") if time.blank?
-        time.strftime("%-d %b %Y, %H:%M UTC")
+        tz = user&.user_option&.timezone
+        local = tz.present? ? (time.in_time_zone(tz) rescue time.utc) : time.utc
+        local.strftime("%Y-%m-%d %H:%M %Z")
       end
 
       def interpolate(template, vars)
@@ -279,7 +284,7 @@ module CustomWizard
           wizard_name: wizard.name,
           wizard_url: "/w/#{wizard.id.dasherize}",
           remaining_skips: skips_remaining(user, wizard),
-          deadline: format_deadline(deadline_for(user, wizard)),
+          deadline: format_deadline(deadline_for(user, wizard), user),
         }
       end
 
